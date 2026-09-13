@@ -1,0 +1,37 @@
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  display: inline-block;
+  background: linear-gradient(
+    90deg,
+    rgba(220, 226, 236, 0.6) 25%,
+    rgba(240, 244, 250, 0.95) 37%,
+    rgba(220, 226, 236, 0.6) 63%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 6px;
+  vertical-align: middle;
+}
+
+/* For dark background components like Hero card */
+.skeletonDark {
+  display: inline-block;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.08) 25%,
+    rgba(255, 255, 255, 0.22) 37%,
+    rgba(255, 255, 255, 0.08) 63%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 6px;
+  vertical-align: middle;
+}

@@ -1,0 +1,75 @@
+.ladder{padding:8px 24px 22px}
+
+.rung{display:grid;grid-template-columns:72px 1fr;gap:16px;position:relative}
+.rail{display:flex;flex-direction:column;align-items:center}
+.rail::before,.rail::after{content:"";width:2px;flex:1;background:var(--line)}
+.rung:first-child .rail::before,.rung:last-child .rail::after{background:transparent}
+.rung[data-s="done"] .rail::before,.rung[data-s="done"] .rail::after{background:var(--mint)}
+.rung[data-s="now"] .rail::before{background:var(--mint)}
+.rung[data-s="now"] .rail::after,
+.rung[data-s="locked"] .rail::before,
+.rung[data-s="locked"] .rail::after{background:repeating-linear-gradient(180deg,var(--line) 0 5px,transparent 5px 10px)}
+
+.station{margin:8px 0;z-index:1;filter:drop-shadow(0 10px 14px rgba(11,16,22,.26));
+  transition:transform .3s cubic-bezier(.34,1.4,.5,1),filter .3s}
+.rung:hover .station{transform:translateY(-4px) rotate(-3deg)}
+.rung[data-s="now"] .station{filter:drop-shadow(0 12px 20px rgba(18,144,90,.55))}
+.rung[data-s="locked"] .station{filter:grayscale(.9) brightness(.92) opacity(.45) drop-shadow(0 6px 10px rgba(11,16,22,.16))}
+.rung[data-s="locked"]:hover .station{filter:grayscale(.55) brightness(.98) opacity(.75) drop-shadow(0 10px 16px rgba(11,16,22,.22))}
+
+/* each tier's medal is its own object — the higher ranks read bigger */
+.rung:nth-child(1) .station{width:48px;height:54px}
+.rung:nth-child(2) .station{width:51px;height:58px}
+.rung:nth-child(3) .station{width:56px;height:63px}
+.rung:nth-child(4) .station{width:58px;height:66px}
+.rung:nth-child(5) .station{width:61px;height:69px}
+.rung:nth-child(6) .station{width:64px;height:72px}
+
+.card{border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin:6px 0 14px;
+  background:var(--surface);cursor:pointer;width:100%;text-align:left;
+  transition:transform .2s,box-shadow .2s,border-color .2s}
+.rung:hover .card{border-color:#CBD5E6;box-shadow:var(--shadow-lift)}
+.rung[data-s="now"] .card{border-color:#CDD9F2;background:linear-gradient(180deg,#F8FAFF,#fff);
+  box-shadow:var(--shadow-lift)}
+.rung[data-s="locked"] .card{background:#FBFCFD}
+
+.head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.title{font-size:16px;font-weight:800;letter-spacing:-.025em;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.req{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin-top:5px}
+.uplift{font-family:var(--mono);font-weight:700;font-size:15px;text-align:right;white-space:nowrap;min-width:78px}
+.uplift small{display:block;font-family:var(--sans);font-size:10px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-3);font-weight:700;margin-bottom:3px}
+
+.rewards{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.rw{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:11px;
+  background:#F5F7FA;font-size:12px;font-weight:600}
+.rw svg{width:15px;height:15px;color:var(--ink-2);flex:none}
+.cash{background:rgba(47,191,113,.1);color:#16804A}
+.cash svg{color:#18884D}
+.star{background:linear-gradient(120deg,#0E3628,var(--forest-b));color:#fff;
+  box-shadow:0 10px 22px -14px rgba(4,17,13,1),inset 0 1px 0 rgba(255,255,255,.16)}
+.star svg{color:var(--mint-lt)}
+.rung[data-s="locked"] .rw{opacity:.75}
+
+.prog{margin-top:16px;padding-top:15px;border-top:1px solid var(--line)}
+.gate{margin-bottom:12px}
+.gate:last-child{margin-bottom:0}
+.gate-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.gate-lab{font-size:12.5px;font-weight:600}
+.gate-val{font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+.gate-val em{font-style:normal;color:var(--ink);font-weight:600}
+.gbar{height:7px;background:var(--line);border-radius:99px;overflow:hidden;
+  box-shadow:inset 0 1px 2px rgba(11,16,22,.14)}
+.gbar i{display:block;height:100%;border-radius:99px;
+  background:linear-gradient(90deg,#3B5BFE,#7C93FF);box-shadow:0 0 8px rgba(59,91,254,.4)}
+.gate[data-met="true"] .gbar i{background:linear-gradient(90deg,#18884D,var(--mint));
+  box-shadow:0 0 8px rgba(47,191,113,.5)}
+
+@media(max-width:900px){
+  .ladder{padding:8px 18px 22px}
+  .rung{grid-template-columns:50px 1fr;gap:11px}
+  /* [data-s] matches the specificity of the :nth-child sizing above, and lands
+     later, so one rule flattens all six back to a single mobile size */
+  .rung[data-s] .station{width:44px;height:50px}
+  .uplift{text-align:left}
+}

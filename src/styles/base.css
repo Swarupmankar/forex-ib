@@ -1,0 +1,147 @@
+/* ================================================================
+   BASE — the primitives shared by every page: page chrome, buttons,
+   selects, cards, chips, tables, fields.
+
+   Flattened from ib-platform.html in source order, last declaration
+   of each property wins. Component-specific CSS lives in the module
+   next to its component; only genuinely cross-cutting class names
+   stay global here (a global rule cannot reach a hashed module class).
+   ================================================================ */
+
+/* Medallions must never be clipped by a card — the drop shadow lives outside
+   the viewBox. Sizing is always supplied by the consuming context. */
+.medal{display:block;overflow:visible}
+
+/* ================= PAGE CHROME ================= */
+.wrap{padding:28px 32px 72px;max-width:1320px;width:100%}
+
+.view{animation:in .24s ease}
+@keyframes in{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.eyebrow{font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+h1{font-size:27px;font-weight:800;letter-spacing:-.04em;margin:5px 0 0}
+.sub{color:var(--ink-2);margin-top:5px;font-size:13px}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+
+/* ================= BUTTONS ================= */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;padding:0 15px;
+  border-radius:11px;font-weight:600;font-size:13px;border:1px solid var(--line);background:var(--surface);
+  transition:.15s;white-space:nowrap}
+.btn svg{width:16px;height:16px;flex:none}
+.btn:hover{background:#FAFBFD;border-color:var(--line)}
+.btn-dark{background:var(--navy);color:#fff;border-color:var(--navy);box-shadow:0 6px 16px -10px rgba(17,24,39,.9)}
+/* .btn:hover lands after .btn-dark:hover in the mockup and wins border-color at equal specificity */
+.btn-dark:hover{background:#1E2739;border-color:var(--line)}
+.btn-accent{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-white{background:#fff;color:var(--forest-a);border-color:#fff;height:38px;font-weight:700}
+.btn-ghost{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14);color:#fff}
+.btn-sm{height:32px;padding:0 12px;font-size:12.5px;border-radius:9px}
+
+.select{display:flex;align-items:center;gap:8px;height:38px;padding:0 13px;background:var(--surface);
+  border:1px solid var(--line);border-radius:11px;font-weight:600;font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+.select svg{width:14px;height:14px;flex:none}
+
+.search{flex:1;max-width:360px;display:flex;align-items:center;gap:9px;background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r-ctl);padding:8px 12px}
+.search input{border:0;outline:0;background:none;width:100%;font:inherit;min-width:0}
+.search svg{width:16px;height:16px;color:var(--ink-3);flex:none}
+
+/* ================= CARDS ================= */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.card-pad{padding:22px 24px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:20px 24px;
+  border-bottom:1px solid var(--line-soft);flex-wrap:wrap}
+.card-title{font-size:15.5px;font-weight:700;letter-spacing:-.015em;display:flex;align-items:center;gap:9px}
+.card-title svg{display:none}          /* refinement pass drops card-title icons */
+.card-sub{color:var(--ink-3);font-size:12px;margin-top:3px}
+.stack{display:flex;flex-direction:column;gap:20px}
+.two{display:grid;grid-template-columns:1.55fr 1fr;gap:16px}
+
+.toolbar{display:flex;gap:10px;padding:14px 22px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.toolbar .search{max-width:none;flex:1;min-width:180px}
+
+/* ================= ONE CHIP LANGUAGE ================= */
+.chip,.flag,.pill,.met{display:inline-flex;align-items:center;border-radius:999px;font-size:11px;
+  font-weight:700;letter-spacing:.02em;line-height:1;padding:6px 10px}
+.chip{gap:6px}
+.chip::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}
+.c-active{background:rgba(47,191,113,.1);color:#18884D}
+.c-dormant{background:rgba(233,162,59,.13);color:#A96D12}
+.c-unfunded{background:var(--line-soft);color:var(--ink-2)}
+.c-churned{background:rgba(229,72,77,.09);color:var(--rose)}
+.c-paid{background:rgba(59,91,254,.09);color:var(--accent)}
+
+.flag{gap:5px;letter-spacing:.08em;text-transform:uppercase}
+.f-now{background:var(--forest-a);color:#fff}
+.f-done{background:rgba(47,191,113,.13);color:#16804A}
+.f-next{background:var(--accent-soft);color:var(--accent)}
+.f-lock{background:var(--line-soft);color:var(--ink-3)}
+
+.pill{gap:6px;background:rgba(47,191,113,.14);color:var(--mint-lt);border:1px solid rgba(47,191,113,.26)}
+.pill svg{width:13px;height:13px}
+
+.met{gap:4px;text-transform:uppercase;color:#16804A}
+.met svg{width:12px;height:12px}
+
+/* ================= TABLES ================= */
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;min-width:720px;table-layout:auto}
+th{text-align:left;text-transform:uppercase;font-weight:700;background:transparent;
+  border-bottom:1px solid var(--line);font-size:10px;letter-spacing:.14em;color:var(--ink-3);
+  height:40px;padding:0 22px;line-height:1.2;vertical-align:middle;white-space:nowrap}
+td{border-bottom:1px solid var(--line-soft);height:62px;padding:0 22px;
+  line-height:1.35;vertical-align:middle;white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+tbody tr{transition:background .12s}
+tbody tr:hover{background:#FAFBFD}
+td .chip{vertical-align:middle}
+
+.num{font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap;
+  color:var(--ink-2);font-size:12.5px}
+.qty,th.qty{text-align:right}
+.qty{font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink)}
+
+.who{display:flex;align-items:center;gap:10px}
+.who-av{width:34px;height:34px;border-radius:50%;background:#F1F3F8;color:var(--ink-2);
+  display:grid;place-items:center;font-weight:700;font-size:12px;flex:none}
+.who-name{font-weight:600;font-size:13.5px}
+.who-id{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+
+/* ================= FIELDS ================= */
+.field{display:grid;grid-template-columns:88px minmax(0,1fr);align-items:center;gap:12px;margin-top:12px}
+.field:first-child{margin-top:0}
+.field-lab{font-size:12.5px;color:var(--ink-2);font-weight:600}
+.field-val{background:#F6F8FB;border:1px solid transparent;border-radius:10px;padding:10px 14px;
+  font-family:var(--mono);font-size:12.5px;color:var(--ink-2);overflow:auto;white-space:nowrap;flex:1;min-width:0}
+
+.notice{display:flex;gap:11px;margin:0 24px 22px;padding:13px 15px;background:#FFF8EC;
+  border:1px solid #F5E3C2;border-radius:14px;font-size:12.5px;color:#845611}
+.notice svg{width:17px;height:17px;flex:none;margin-top:1px}
+
+/* ================= RESPONSIVE ================= */
+@media(max-width:1180px){
+  .two{grid-template-columns:1fr}
+}
+@media(max-width:900px){
+  .wrap{padding:16px 14px calc(96px + env(safe-area-inset-bottom))}
+  /* the app header carries the page title on mobile — drop the duplicate, keep the actions */
+  .page-head{margin-bottom:14px;gap:10px}
+  .page-head>div:first-child{display:none}
+  .page-head .actions{width:100%;gap:10px}
+  .page-head .actions .btn{flex:1;height:44px;justify-content:center}
+  .stack{gap:14px}
+  .search{display:none}
+  .card-head{padding:16px 18px;gap:12px}
+  .card-head .actions{width:100%}
+  .toolbar{padding:14px 16px}
+  .toolbar .select{flex:1;justify-content:center}
+  .card-pad{padding:16px 18px}
+  th,td{padding:0 18px}
+  .notice{margin:0 18px 18px}
+
+  /* tap feedback instead of hover */
+  .btn:active,.select:active{transform:scale(.97)}
+  .btn,.select{-webkit-user-select:none;user-select:none}
+  tbody tr:active{background:#EEF1F6}
+}

@@ -1,0 +1,117 @@
+/* ================================================================
+   THE HERO — "the one place we spend", per the refinement pass.
+   Shared by Overview, Rewards and Payouts.
+   ================================================================ */
+.hero{position:relative;overflow:hidden;color:#fff;border-radius:24px;
+  background:
+    radial-gradient(120% 140% at 88% -20%,rgba(47,191,113,.22),transparent 58%),
+    linear-gradient(132deg,#123D2D 0%,#08221A 44%,#04110D 100%);
+  box-shadow:0 1px 1px rgba(4,17,13,.4),0 34px 60px -40px rgba(4,17,13,1)}
+
+/* fine film grain; the earlier grid-line texture was replaced by this */
+.hero::before{content:"";position:absolute;inset:0;opacity:.05;background-size:140px 140px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E")}
+
+.orb{position:absolute;border-radius:50%;filter:blur(50px);pointer-events:none}
+.orb-a{width:340px;height:340px;right:-60px;top:-160px;background:rgba(47,191,113,.34);opacity:.55}
+.orb-b{width:260px;height:260px;left:38%;bottom:-190px;background:rgba(59,91,254,.22);opacity:.4}
+
+.hero-in{position:relative;display:grid;grid-template-columns:1fr 286px;gap:40px;
+  padding:34px 36px;align-items:center}
+.hero-in.single{grid-template-columns:1fr}
+
+.hero-lab{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(255,255,255,.42);font-weight:700}
+.hero-num{font-size:52px;font-weight:800;letter-spacing:-.05em;line-height:1;margin-top:12px;
+  font-variant-numeric:tabular-nums}
+.hero-num.words{font-size:38px}
+.hero-foot{display:flex;align-items:center;gap:11px;margin-top:15px;flex-wrap:wrap}
+.hero-note{font-size:12px;color:rgba(255,255,255,.45)}
+.hero-cta{display:flex;gap:9px;margin-top:22px;flex-wrap:wrap}
+
+/* inline facts under the headline number */
+.hero-facts{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 14px;margin-top:12px}
+.fact{display:flex;align-items:baseline;gap:5px;font-size:12.5px;color:rgba(255,255,255,.45)}
+.fact em{font-style:normal;font-weight:600;color:rgba(255,255,255,.72);font-family:var(--mono);font-size:12px}
+.fact i{font-style:normal}
+.fact+.fact::before{content:"·";margin-right:9px;opacity:.4}
+
+.hero-splits{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;
+  margin-top:28px;padding-top:22px;border-top:1px solid rgba(255,255,255,.09)}
+.hs{min-width:0}
+.hs-v{font-size:21px;font-weight:700;letter-spacing:-.035em;margin-top:7px;
+  font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hs-d{font-size:11px;color:rgba(255,255,255,.4);margin-top:4px;font-weight:500}
+
+/* ---------- the tier dial: glass ring around a lit medal ---------- */
+.dial{position:relative;display:grid;place-items:center;padding:6px}
+.dial::before{content:"";position:absolute;width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,rgba(47,191,113,.32),transparent 62%);filter:blur(26px)}
+.ring{width:230px;height:230px;transform:rotate(-90deg);filter:drop-shadow(0 0 14px rgba(47,191,113,.34))}
+.ring-bg{stroke:rgba(255,255,255,.06);stroke-width:11}
+.ring-fg{stroke:url(#dialgrad);stroke-linecap:round;stroke-width:11;
+  transition:stroke-dashoffset 1.1s cubic-bezier(.4,0,.2,1)}
+.dial-core{position:absolute;display:grid;place-items:center;text-align:center;transform:translateY(-4px)}
+.dial-med{width:86px;height:97px;filter:drop-shadow(0 14px 22px rgba(0,0,0,.6));
+  transition:transform .3s cubic-bezier(.34,1.4,.5,1),filter .3s}
+.dial:hover .dial-med{transform:translateY(-3px) scale(1.03)}
+.dial-pct{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--mint-lt);
+  margin-top:9px;letter-spacing:.02em}
+.dial-cap{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(255,255,255,.38);font-weight:700;margin-top:3px}
+.dial-name{position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);white-space:nowrap;
+  background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(8px);
+  padding:6px 14px;border-radius:999px;font-size:11.5px;font-weight:700;
+  box-shadow:0 8px 20px -10px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.22)}
+
+/* ---------- mobile: a compact tier row replaces the oversized dial ---------- */
+.tier-mini{display:none}
+
+@media(max-width:900px){
+  .hero{border-radius:22px}
+  .hero-in{grid-template-columns:1fr;padding:22px 18px;gap:0}
+  .hero-num{font-size:34px;letter-spacing:-.045em;margin-top:8px}
+  .hero-num.words{font-size:30px}
+  .hero-foot{margin-top:14px}
+  .hero-cta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+  .hero-cta :global(.btn){width:100%;height:44px;font-size:13.5px}
+  .hero-foot :global(.pill){font-size:11.5px}
+
+  .dial{display:none}
+  .tier-mini{display:flex;align-items:center;gap:13px;margin-top:18px;padding:13px 14px;
+    border-radius:15px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}
+  .tm-med{width:38px;height:43px;flex:none;filter:drop-shadow(0 5px 9px rgba(0,0,0,.5))}
+  .tm-body{flex:1;min-width:0}
+  .tm-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .tm-name{font-size:13.5px;font-weight:700;letter-spacing:-.015em}
+  .tm-pct{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--mint-lt)}
+  .tm-bar{height:5px;border-radius:99px;background:rgba(255,255,255,.13);margin-top:8px;
+    overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.35)}
+  .tm-bar i{display:block;height:100%;border-radius:99px;
+    background:linear-gradient(90deg,#18884D,var(--mint-lt));box-shadow:0 0 8px rgba(47,191,113,.6)}
+  .tm-note{font-size:11px;color:rgba(255,255,255,.45);margin-top:7px}
+
+  /* facts become a three-up stat row */
+  .hero-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;
+    margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.09)}
+  .fact{display:block;min-width:0}
+  .fact em{display:block;font-size:14.5px;color:#fff;letter-spacing:-.02em;
+    overflow:hidden;text-overflow:ellipsis}
+  .fact i{display:block;font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+    color:rgba(255,255,255,.4);font-weight:700;margin-top:5px;white-space:nowrap}
+  .fact+.fact::before{display:none}
+
+  /* splits read as a list, not ragged columns */
+  .hero-splits{display:block;margin-top:18px;padding-top:6px}
+  .hs{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+    padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+  .hs:last-child{border-bottom:0;padding-bottom:0}
+  .hs .hero-lab{margin:0;flex:none}
+  .hs-v{margin-top:0;font-size:16.5px;text-align:right;order:2}
+  .hs-d{margin-top:0;margin-left:auto;padding-left:10px;font-size:10.5px;order:3;flex:none}
+}
+
+@media(max-width:380px){
+  .hero-facts{grid-template-columns:1fr 1fr}
+  .fact:last-child{grid-column:1/-1;padding-top:10px;border-top:1px solid rgba(255,255,255,.07)}
+}

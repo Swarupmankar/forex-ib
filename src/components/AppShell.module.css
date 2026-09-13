@@ -1,0 +1,6 @@
+.app{display:grid;grid-template-columns:var(--sb) 1fr;min-height:100vh}
+.main{min-width:0;display:flex;flex-direction:column}
+
+@media(max-width:900px){
+  .app{grid-template-columns:1fr}
+}

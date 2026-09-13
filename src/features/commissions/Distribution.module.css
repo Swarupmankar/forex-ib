@@ -1,0 +1,41 @@
+.dist{display:grid;grid-template-columns:224px minmax(0,1fr);gap:28px;padding:24px}
+
+.donut-wrap{position:relative;display:grid;place-items:center}
+.donut{width:196px;height:196px;transform:rotate(-90deg);filter:drop-shadow(0 8px 16px rgba(11,16,22,.1))}
+.donut-core{position:absolute;text-align:center}
+.dc-num{font-size:23px;font-weight:800;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.dc-lab{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);
+  font-weight:700;margin-top:5px}
+
+.dist-rows{align-self:center}
+.dr{display:grid;grid-template-columns:12px minmax(120px,1.6fr) 1fr .6fr .8fr .8fr;
+  gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line-soft)}
+.dr:last-child{border-bottom:0}
+.dr i{width:9px;height:9px;border-radius:3px;display:block}
+.dr-n{font-weight:600;font-size:13.5px;min-width:0}
+.dr-n small{display:block;font-weight:500;font-size:11px;color:var(--ink-3);margin-top:3px}
+.dr :global(.qty){font-size:13px}
+
+.dr-head{padding:0 0 10px;border-bottom:1px solid var(--line)}
+.dr-head span{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+
+/* scoped under .dr so they outrank the global `.qty{color:var(--ink)}` —
+   at equal specificity the winner would depend on stylesheet order */
+.dr .hi{color:#16804A;font-weight:700}
+.dr .lo{color:var(--ink-3)}
+
+.foot{display:flex;gap:12px;padding:16px 24px;border-top:1px solid var(--line-soft);
+  font-size:12px;color:var(--ink-3);align-items:flex-start;line-height:1.6}
+.foot svg{width:16px;height:16px;flex:none;margin-top:1px;color:var(--ink-3)}
+.foot b{color:var(--ink-2)}
+
+@media(max-width:900px){
+  .dist{grid-template-columns:1fr;gap:18px;padding:18px}
+  .donut{width:158px;height:158px}
+  /* share and lots drop out; commission and per-lot are what matter on a phone */
+  .dr{grid-template-columns:10px minmax(0,1fr) auto auto;gap:12px;padding:13px 0}
+  .dr .secondary{display:none}
+  .dr-head{display:none}
+  .dr-n small{font-size:10.5px}
+  .foot{padding:16px 18px}
+}

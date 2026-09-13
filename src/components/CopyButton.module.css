@@ -1,0 +1,11 @@
+.copy{width:38px;height:38px;border-radius:11px;background:var(--ink);color:#fff;
+  display:grid;place-items:center;transition:.15s;flex:none}
+.copy:hover{background:#000}
+.copy svg{width:16px;height:16px}
+.done{background:var(--mint)}
+.done:hover{background:var(--mint)}
+
+@media(max-width:900px){
+  .copy{-webkit-user-select:none;user-select:none}
+  .copy:active{transform:scale(.97)}
+}

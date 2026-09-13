@@ -1,0 +1,8 @@
+.wrap{position:relative}
+/* the real control sits invisibly on top: native keyboard behaviour, native
+   picker on mobile, zero visual difference from the mockup's fake select */
+.native{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font:inherit;
+  -webkit-appearance:none;appearance:none;border:0;padding:0}
+/* the ring belongs on the visible control, not the invisible <select> */
+.wrap:has(.native:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

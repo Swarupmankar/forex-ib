@@ -1,0 +1,56 @@
+.tierbanner{display:flex;align-items:center;gap:14px;padding:14px 24px;background:#FAFBFD;
+  border-bottom:1px solid var(--line-soft);flex-wrap:wrap}
+.tb-med{width:40px;height:45px;flex:none;filter:drop-shadow(0 5px 9px rgba(11,16,22,.28));
+  transition:transform .3s cubic-bezier(.34,1.4,.5,1),filter .3s}
+.tbn-txt{font-size:12.5px;color:var(--ink-3);flex:1;min-width:180px}
+.tbn-txt b{color:var(--ink);font-weight:700}
+
+/* the matrix stays a matrix on mobile — it is genuinely two-dimensional, so it
+   scrolls sideways with snap points instead of collapsing into list rows */
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tbl{width:100%;border-collapse:collapse;min-width:680px;table-layout:auto}
+
+/* .rate-tbl th outranks the bare `th` rule that stripped the grey band
+   elsewhere, so this header keeps its tint */
+.tbl th{height:56px;padding:0 18px;vertical-align:middle;background:#FAFBFC}
+.tbl th:first-child{padding-left:22px;min-width:230px}
+.tbl th:last-child{padding-right:22px}
+.tbl th.acct{text-align:right}
+.tbl th.acct span{display:block;font-size:9.5px;letter-spacing:.04em;color:var(--ink-3);
+  text-transform:none;font-weight:600;margin-top:2px;font-family:var(--mono);opacity:.8}
+.tbl td{padding:0;height:auto;border-bottom:1px solid var(--line-soft)}
+.tbl tbody tr:hover{background:#FAFBFC}
+
+.sym{padding:16px 22px;font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:10px}
+.sym small{display:block;color:var(--ink-3);font-weight:500;font-size:11px;
+  font-family:var(--sans);margin-top:3px}
+.v{padding:16px 18px;text-align:right;font-family:var(--mono);font-weight:600;
+  font-variant-numeric:tabular-nums;font-size:13.5px;color:var(--ink-2);min-width:104px}
+.v:last-child{padding-right:22px}
+.best{color:var(--ink);font-weight:700}
+
+.foot{display:flex;gap:12px;padding:16px 24px;border-top:1px solid var(--line-soft);
+  font-size:12px;color:var(--ink-3);align-items:flex-start;line-height:1.6}
+.foot svg{width:16px;height:16px;flex:none;margin-top:1px;color:var(--ink-3)}
+.foot b{color:var(--ink-2)}
+
+/* desktop: an ordinary button group */
+.tabs{display:flex;gap:10px;flex-wrap:wrap}
+
+@media(max-width:900px){
+  .tierbanner{padding-left:18px;padding-right:18px}
+  .scroll{scroll-snap-type:x proximity}
+  .tbl th,.tbl .v{scroll-snap-align:end}
+  .sym,.v{padding-left:18px;padding-right:18px}
+  .foot{padding:16px 18px}
+
+  /* mobile: a segmented control that fills the card head */
+  /* auto-columns rather than repeat(3): a Director sees two preview tiers, a
+     Managing Partner one, and the control still fills the width */
+  .tabs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:0;width:100%;
+    background:var(--line-soft);padding:3px;border-radius:12px}
+  .tabs :global(.btn){border:0;background:transparent;height:34px;border-radius:9px;
+    box-shadow:none;font-size:12.5px}
+  .tabs :global(.btn-dark){background:var(--surface);color:var(--ink);
+    box-shadow:0 2px 6px -3px rgba(11,16,22,.4)}
+}
