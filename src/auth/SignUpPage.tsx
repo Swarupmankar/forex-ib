@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthLayout } from './AuthLayout';
 import {
@@ -12,6 +12,9 @@ import { AS_OF } from '../data/fixtures';
 import s from './Auth.module.css';
 
 export const SignUpPage = () => {
+  useEffect(() => {
+    window.location.href = `${import.meta.env.VITE_USER_PANEL_URL}/auth?mode=signup`;
+  }, []);
   const { signUp } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();

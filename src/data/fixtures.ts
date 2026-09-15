@@ -22,7 +22,7 @@ export const partner: Partner = {
   email: 'rohit@example.com',
   entity: 'Individual · India',
   code: '0YNOZ2CF',
-  referralLink: 'https://forex-user.vercel.app/auth?ref=0YNOZ2CF',
+  referralLink: `${import.meta.env.VITE_USER_PANEL_URL}/auth?ref=0YNOZ2CF`,
   joinedAt: '2025-03-14',
   tier: 3,
   tierHeldMonths: 2,

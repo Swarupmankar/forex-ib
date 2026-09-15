@@ -61,7 +61,7 @@ export const OverviewPage = () => {
   const totalReferrals = ibStats?.totalReferrals ?? ibDashboard?.progress?.totalReferredClients ?? 0;
   const totalVolumeLots = ibStats?.totalLots ?? ibDashboard?.progress?.periodVolumeLots ?? 0;
   const code = ibStats?.referralCode || ibDashboard?.referralCode || partner.code || '';
-  const link = code ? `https://aznxt.com/register?ref=${code}` : '';
+  const link = code ? `${import.meta.env.VITE_USER_PANEL_URL}/auth?ref=${code}` : '';
 
   const referralRows: Referral[] = ibReferrals
     ? ibReferrals.map((r, i) => {

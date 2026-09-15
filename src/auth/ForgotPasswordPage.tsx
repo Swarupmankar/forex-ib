@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthLayout } from './AuthLayout';
 import { Field, TextInput, isEmail } from './fields';
@@ -6,6 +6,9 @@ import { ArrowLeftIcon, CheckIcon, InfoIcon } from '../components/icons';
 import s from './Auth.module.css';
 
 export const ForgotPasswordPage = () => {
+  useEffect(() => {
+    window.location.href = `${import.meta.env.VITE_USER_PANEL_URL}/auth?mode=forgot`;
+  }, []);
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [sent, setSent] = useState(false);

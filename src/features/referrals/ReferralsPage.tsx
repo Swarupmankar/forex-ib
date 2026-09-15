@@ -43,7 +43,7 @@ export const ReferralsPage = () => {
   const { data: ibStats } = useIbReferralStats();
 
   const code = ibStats?.referralCode || partner.code;
-  const link = `https://aznxt.com/register?ref=${code}`;
+  const link = `${import.meta.env.VITE_USER_PANEL_URL}/auth?ref=${code}`;
   const partnerCreds = { ...partner, code, referralLink: link };
 
   const rows: Referral[] = useMemo(() => {

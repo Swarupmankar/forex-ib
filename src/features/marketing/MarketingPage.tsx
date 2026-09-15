@@ -19,7 +19,7 @@ export const MarketingPage = () => {
   const [source, setSource] = useState(linkSources[0]);
   const [busy, setBusy] = useState<string | null>(null);
 
-  const origin = partner.referralLink ? (partner.referralLink.startsWith('http') ? new URL(partner.referralLink).origin : 'https://aznxt.com') : 'https://aznxt.com';
+  const origin = partner.referralLink ? (partner.referralLink.startsWith('http') ? new URL(partner.referralLink).origin : import.meta.env.VITE_USER_PANEL_URL) : import.meta.env.VITE_USER_PANEL_URL;
   const path = linkDestinations.find((d) => d.id === destination)?.path || '/';
   const tracked = `${origin}${path}?ref=${partner.code || ''}&utm_source=${source}`;
 

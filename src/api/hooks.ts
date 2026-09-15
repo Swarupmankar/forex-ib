@@ -59,7 +59,7 @@ export const usePartner = (): Partner => {
     : 'Partner';
   const email = user?.email || '';
   const code = ibDashboard?.referralCode || ibStats?.referralCode || '';
-  const link = code ? `https://aznxt.com/register?ref=${code}` : '';
+  const link = code ? `${import.meta.env.VITE_USER_PANEL_URL}/auth?ref=${code}` : '';
   const rawLevel = ibDashboard?.currentTier?.levelOrder || 1;
   const tierRank = Math.max(1, rawLevel) as TierRank;
 

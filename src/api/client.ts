@@ -3,7 +3,7 @@ import { ENDPOINTS } from './endpoints';
 import { authStorage } from '../auth/auth.storage';
 import { isTokenExpired } from '../auth/auth.tokens';
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/v1';
+const baseURL = import.meta.env.VITE_API_BASE_URL;
 
 export const apiClient = axios.create({
   baseURL,

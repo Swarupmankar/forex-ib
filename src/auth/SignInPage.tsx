@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthLayout } from './AuthLayout';
 import { Checkbox, Field, PasswordInput, TextInput, isEmail } from './fields';
 import { useAuth } from './useAuth';
@@ -97,7 +97,7 @@ export const SignInPage = () => {
         <Field
           label="Password"
           error={submitted ? passwordError : undefined}
-          hint={<Link className={s.hint} to="/forgot-password">Forgot password?</Link>}
+          hint={<a className={s.hint} href={`${import.meta.env.VITE_USER_PANEL_URL}/auth?mode=forgot`} target="_blank" rel="noopener noreferrer">Forgot password?</a>}
         >
           {({ id, invalid }) => (
             <PasswordInput
@@ -123,7 +123,7 @@ export const SignInPage = () => {
       </form>
 
       <div className={s.alt}>
-        New partner? <Link to="/signup">Apply for an account</Link>
+        New partner? <a href={`${import.meta.env.VITE_USER_PANEL_URL}/auth?mode=signup`} target="_blank" rel="noopener noreferrer">Apply for an account</a>
       </div>
 
       <div className={s.demo}>
