@@ -1,3 +1,4 @@
+import wordmarkFont from '../../brand/wordmark-font.json';
 import { downloadFile, downloadText } from '../../lib/download';
 import type { CreativeAsset, Partner } from '../../types';
 
@@ -9,9 +10,8 @@ import type { CreativeAsset, Partner } from '../../types';
  * - html   → a standalone email file with the tracked link inlined.
  * - other  → a brief: the copy, the specs and the tracked link, as text.
  *
- * The SVG deliberately uses system font families. A creative referencing a web
- * font would render with a fallback anyway, because an SVG loaded as an image
- * is an isolated document and cannot see the page's fonts.
+ * The wordmark font is embedded in the SVG so previews and downloads use
+ * the canonical Montserrat weights even in an isolated image document.
  */
 
 const esc = (s: string) =>
@@ -20,48 +20,41 @@ const esc = (s: string) =>
 const creativeSvg = (asset: CreativeAsset, partner: Partner, link: string) => {
   const w = asset.width ?? 1200;
   const h = asset.height ?? 630;
-  const wide = w / h > 3; // leaderboard strip
-
-  const pad = Math.round(Math.min(w, h) * (wide ? 0.12 : 0.08));
-  const headline = Math.round(wide ? h * 0.28 : Math.min(w, h) * 0.075);
-  const small = Math.round(wide ? h * 0.15 : Math.min(w, h) * 0.032);
-
-  // wrap the headline to a sensible measure for the shape
-  const perLine = wide ? 52 : 26;
-  const words = asset.headline.split(' ');
+  const wide = w / h > 3;
+  const pad = Math.round(wide ? 18 : w * .08);
+  const headline = Math.round(wide ? 22 : w * .073);
+  const small = Math.round(wide ? 10 : w * .023);
+  const brandSize = wide ? 12 : w * .028;
+  const markSize = wide ? 20 : w * .06;
+  const perLine = wide ? 48 : 24;
   const lines: string[] = [];
   let line = '';
-  for (const word of words) {
-    if ((line + ' ' + word).trim().length > perLine) {
-      lines.push(line.trim());
-      line = word;
-    } else line += ` ${word}`;
+  for (const word of asset.headline.split(' ')) {
+    if ((line + ' ' + word).trim().length > perLine) { lines.push(line.trim()); line = word; }
+    else line += ` ${word}`;
   }
   if (line.trim()) lines.push(line.trim());
-
-  const blockTop = wide ? pad + headline : Math.round(h * 0.5) - (lines.length * headline * 1.2) / 2;
-
+  const blockTop = wide ? 51 : h * .4;
+  const maxLinkChars = wide ? 88 : 56;
+  const linkLines = link.match(new RegExp(`.{1,${maxLinkChars}}`, 'g')) ?? [link];
+  const mark = (x: number, y: number, size: number, opacity = 1) => `<g transform="translate(${x} ${y}) scale(${size / 495})" opacity="${opacity}"><polygon points="4,4 164,125 164,370 4,491" fill="#f4f6f5"/><polygon points="452,4 292,125 292,370 452,491" fill="#b0f000"/></g>`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#123D2D"/><stop offset="44%" stop-color="#08221A"/><stop offset="100%" stop-color="#04110D"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="0.85" cy="0" r="0.9">
-      <stop offset="0%" stop-color="#2FBF71" stop-opacity="0.34"/><stop offset="100%" stop-color="#2FBF71" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
-  <rect width="${w}" height="${h}" fill="url(#bg)"/>
-  <rect width="${w}" height="${h}" fill="url(#glow)"/>
-  ${lines
-    .map(
-      (l, i) =>
-        `<text x="${pad}" y="${blockTop + i * headline * 1.2}" font-family="Helvetica Neue,Helvetica,Arial,sans-serif" font-size="${headline}" font-weight="800" fill="#ffffff" letter-spacing="${-headline * 0.03}">${esc(l)}</text>`,
-    )
-    .join('\n  ')}
-  <text x="${pad}" y="${h - pad}" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="${small}" fill="#6DE3A4">${esc(link)}</text>
-  <text x="${w - pad}" y="${pad + small}" text-anchor="end" font-family="Helvetica Neue,Helvetica,Arial,sans-serif" font-size="${small}" font-weight="700" fill="rgba(255,255,255,0.55)" letter-spacing="${small * 0.14}">CODE ${esc(partner.code)}</text>
+  <defs><style>@font-face{font-family:MovementWordmark;font-style:normal;font-weight:100 900;src:url(data:font/woff2;base64,${wordmarkFont.data}) format("woff2")}</style></defs><title>${esc(asset.name)}</title><desc>${esc(link)}</desc>
+  <rect width="${w}" height="${h}" fill="#0c0c0c"/>
+  ${!wide ? mark(w * .53, h * .42, w * .68, .065) : ''}
+  ${mark(pad, wide ? 10 : pad, markSize)}
+  <text x="${pad + markSize * 1.2}" y="${(wide ? 10 : pad) + markSize * .65}" font-family="MovementWordmark,Montserrat,sans-serif" font-size="${brandSize}" fill="#fff"><tspan font-weight="700">Movement</tspan><tspan font-weight="300"> Markets</tspan></text>
+  <text x="${w - pad}" y="${(wide ? 10 : pad) + markSize * .65}" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="${small}" fill="#b0f000">${esc(partner.code)}</text>
+  ${lines.map((l, i) => `<text x="${pad}" y="${blockTop + i * headline * 1.18}" font-family="Helvetica,Arial,sans-serif" font-size="${headline}" font-weight="600" fill="#fff" letter-spacing="${-headline * .035}">${esc(l)}</text>`).join('')}
+  ${!wide ? `<rect x="${pad}" y="${blockTop + lines.length * headline * 1.18 + 20}" width="${w * .075}" height="4" rx="2" fill="#b0f000"/>` : ''}
+  ${linkLines.slice(0, wide ? 1 : 3).map((l, i) => `<text x="${pad}" y="${h - pad - (wide ? 0 : small * 3.5) + i * small * 1.4}" font-family="Helvetica,Arial,sans-serif" font-size="${small}" fill="#acb6bd">${esc(l)}${wide && linkLines.length > 1 ? '…' : ''}</text>`).join('')}
+  ${!wide ? `<text x="${pad}" y="${h - pad}" font-family="Helvetica,Arial,sans-serif" font-size="${small * .8}" fill="#87949d">Trading involves risk. Capital at risk.</text>` : ''}
 </svg>`;
 };
+
+/** The displayed creative and downloaded file use the same renderer. */
+export const creativePreview = (asset: CreativeAsset, partner: Partner, link: string): string =>
+  `data:image/svg+xml;charset=utf-8,${encodeURIComponent(creativeSvg(asset, partner, link))}`;
 
 const RASTERISE_TIMEOUT_MS = 8_000;
 
@@ -101,23 +94,23 @@ const rasterise = (svg: string, w: number, h: number): Promise<Blob> =>
   });
 
 const emailHtml = (asset: CreativeAsset, partner: Partner, link: string) => `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>${esc(asset.name)}</title></head>
-<body style="margin:0;padding:0;background:#F1F3F7;font-family:Helvetica,Arial,sans-serif">
+<html lang="en"><head><meta charset="utf-8"><defs><style>@font-face{font-family:MovementWordmark;font-style:normal;font-weight:100 900;src:url(data:font/woff2;base64,${wordmarkFont.data}) format("woff2")}</style></defs><title>${esc(asset.name)}</title></head>
+<body style="margin:0;padding:0;background:#f3f5f8;font-family:Helvetica,Arial,sans-serif">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px">
     <tr><td align="center">
       <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden">
-        <tr><td style="padding:34px 32px;background:linear-gradient(135deg,#123D2D,#04110D);color:#ffffff">
+        <tr><td style="padding:34px 32px;background:#101416;color:#ffffff">
           <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.45);font-weight:700">Invitation</div>
           <div style="font-size:26px;font-weight:800;letter-spacing:-.03em;margin-top:10px">${esc(asset.headline)}</div>
         </td></tr>
         <tr><td style="padding:28px 32px;color:#0B1016;font-size:15px;line-height:1.6">
           <p style="margin:0 0 18px">Open an account through the link below and you will be set up in minutes.</p>
           <p style="margin:0 0 24px">Use code <b style="font-family:monospace">${esc(partner.code)}</b> at sign-up.</p>
-          <a href="${esc(link)}" style="display:inline-block;background:#111827;color:#ffffff;text-decoration:none;padding:13px 22px;border-radius:11px;font-weight:700;font-size:15px">Open an account</a>
-          <p style="margin:24px 0 0;font-size:12px;color:#94A0B0;word-break:break-all">${esc(link)}</p>
+          <a href="${esc(link)}" style="display:inline-block;background:#b0f000;color:#152000;text-decoration:none;padding:13px 22px;border-radius:11px;font-weight:700;font-size:15px">Open an account</a>
+          <p style="margin:24px 0 0;font-size:12px;color:#687380;word-break:break-all">${esc(link)}</p>
         </td></tr>
       </table>
-      <p style="font-size:11px;color:#94A0B0;margin:18px 0 0">Trading involves risk. Capital at risk.</p>
+      <p style="font-size:11px;color:#687380;margin:18px 0 0">Trading involves risk. Capital at risk.</p>
     </td></tr>
   </table>
 </body></html>`;

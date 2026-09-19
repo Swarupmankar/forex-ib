@@ -1,6 +1,7 @@
 import { Fragment, type ComponentType, type SVGProps } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Medal } from './Medal';
+import { Brand } from './Brand';
 import { SECTIONS, type SectionId } from '../nav';
 import {
   GridIcon, UsersIcon, DollarIcon, TrophyIcon, MegaphoneIcon, CardIcon, GearIcon, LogOutIcon,
@@ -34,13 +35,7 @@ export const Sidebar = () => {
 
   return (
     <aside className={s.side}>
-      <div className={s.brand}>
-        <div className={s.brandMark}>IB</div>
-        <div>
-          <div className={s.brandName}>IB Portal</div>
-          <div className={s.brandSub}>Partnerships</div>
-        </div>
-      </div>
+      <NavLink to="/" className={s.brand} aria-label="Movement Markets partner overview"><Brand /></NavLink>
 
       <nav className={s.nav}>
         {SECTIONS.map((section, i) => {

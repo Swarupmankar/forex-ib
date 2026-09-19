@@ -7,7 +7,7 @@ import type { TierRank } from '../../types';
 import s from './TierLadder.module.css';
 
 const RewardChips = ({ tier }: { tier: Tier }) => (
-  <div className={s.rewards}>
+  <span className={s.rewards}>
     {/* the ladder shows three; the detail modal shows the full list */}
     {tier.rewards.slice(0, 3).map((r) => {
       const Icon = REWARD_ICONS[r.icon];
@@ -18,7 +18,7 @@ const RewardChips = ({ tier }: { tier: Tier }) => (
         </span>
       );
     })}
-  </div>
+  </span>
 );
 
 /** Both gates toward the next tier, shown on the rung you're standing on. */
@@ -94,37 +94,24 @@ export const TierLadder = ({
         const isBaseTier = tier.rank === 1;
 
         return (
-          <div className={s.rung} data-s={state} key={tier.rank}>
-            <div className={s.rail}>
-              <Medal tier={tier.rank} className={s.station} />
-            </div>
-
-            <button className={s.card} onClick={() => onSelect(tier.rank)}>
-              <div className={s.head}>
-                <div>
-                  <div className={s.title}>
-                    {tier.name} <span className={`flag ${flag.cls}`}>{flag.label}</span>
-                  </div>
-                  <div className={s.req}>
-                    {isBaseTier
-                      ? "Base tier · Entry level"
-                      : `${int(tier.minLots)} lots · ${tier.minActiveTraders} active traders`}
-                  </div>
-                </div>
-                <div className={s.uplift}>
-                  <small>Uplift</small>
-                  {tier.upliftLabel}
-                </div>
-              </div>
-
+          <article className={s.rung} data-s={state} key={tier.rank}>
+            <button className={s.card} onClick={() => onSelect(tier.rank)} aria-label={`View ${tier.name} tier details`}>
+              <span className={s.top}>
+                <Medal tier={tier.rank} className={s.station} />
+                <span className={`flag ${flag.cls}`}>{flag.label}</span>
+              </span>
+              <span className={s.title}>{tier.name}</span>
+              <span className={s.req}>
+                {isBaseTier ? 'Your starting point' : `${int(tier.minLots)} lots · ${tier.minActiveTraders} active traders`}
+              </span>
+              <span className={s.uplift}><small>Rate uplift</small><b>{tier.upliftLabel}</b></span>
               <RewardChips tier={tier} />
-
-              {/* Progress gates show on Partner (Tier 2) or whichever next target tier is being pursued */}
-              {!isBaseTier && tier.rank === targetRank && progress.next && (
-                <CurrentGates progress={progress} volume={volume} traders={traders} />
-              )}
+              <span className={s.details}>View tier details <span aria-hidden="true">↗</span></span>
             </button>
-          </div>
+            {!isBaseTier && tier.rank === targetRank && progress.next && (
+              <CurrentGates progress={progress} volume={volume} traders={traders} />
+            )}
+          </article>
         );
       })}
     </div>

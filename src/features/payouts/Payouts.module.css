@@ -18,7 +18,7 @@
 
 .mtop{display:flex;align-items:flex-start;gap:11px}
 .mico{width:34px;height:34px;border-radius:10px;flex:none;display:grid;place-items:center;
-  background:linear-gradient(150deg,#123D2D,#04110D);color:var(--mint-lt);
+  background:linear-gradient(150deg,#23292c,#0d1012);color:var(--mint-lt);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 6px 12px -8px rgba(4,17,13,.9)}
 .mico svg{width:16px;height:16px}
 .mhead{flex:1;min-width:0}
@@ -29,7 +29,7 @@
 .mactions{display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)}
 .mact{font-size:11.5px;font-weight:700;color:var(--ink-2);padding:6px 10px;border-radius:8px;
   background:var(--line-soft);transition:.15s}
-.mact:hover{background:#E7EAF1;color:var(--ink)}
+.mact:hover{background:var(--line);color:var(--ink)}
 .mact.danger:hover{background:rgba(229,72,77,.1);color:var(--rose)}
 .mact:disabled{opacity:.45;cursor:not-allowed}
 
@@ -42,3 +42,5 @@
   .methods{grid-template-columns:1fr;padding:16px 18px}
   .method{-webkit-user-select:none;user-select:none}
 }
+
+.mico{background:var(--accent-soft);color:var(--accent);box-shadow:none}

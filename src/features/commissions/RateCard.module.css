@@ -1,4 +1,4 @@
-.tierbanner{display:flex;align-items:center;gap:14px;padding:14px 24px;background:#FAFBFD;
+.tierbanner{display:flex;align-items:center;gap:14px;padding:14px 24px;background:var(--surface-2);
   border-bottom:1px solid var(--line-soft);flex-wrap:wrap}
 .tb-med{width:40px;height:45px;flex:none;filter:drop-shadow(0 5px 9px rgba(11,16,22,.28));
   transition:transform .3s cubic-bezier(.34,1.4,.5,1),filter .3s}
@@ -12,14 +12,14 @@
 
 /* .rate-tbl th outranks the bare `th` rule that stripped the grey band
    elsewhere, so this header keeps its tint */
-.tbl th{height:56px;padding:0 18px;vertical-align:middle;background:#FAFBFC}
+.tbl th{height:56px;padding:0 18px;vertical-align:middle;background:var(--surface-2)}
 .tbl th:first-child{padding-left:22px;min-width:230px}
 .tbl th:last-child{padding-right:22px}
 .tbl th.acct{text-align:right}
-.tbl th.acct span{display:block;font-size:9.5px;letter-spacing:.04em;color:var(--ink-3);
+.tbl th.acct span{display:block;font-size:11px;letter-spacing:.04em;color:var(--ink-3);
   text-transform:none;font-weight:600;margin-top:2px;font-family:var(--mono);opacity:.8}
 .tbl td{padding:0;height:auto;border-bottom:1px solid var(--line-soft)}
-.tbl tbody tr:hover{background:#FAFBFC}
+.tbl tbody tr:hover{background:var(--surface-2)}
 
 .sym{padding:16px 22px;font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:10px}
 .sym small{display:block;color:var(--ink-3);font-weight:500;font-size:11px;

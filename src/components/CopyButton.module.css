@@ -1,9 +1,9 @@
-.copy{width:38px;height:38px;border-radius:11px;background:var(--ink);color:#fff;
+.copy{width:44px;height:44px;border-radius:11px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);
   display:grid;place-items:center;transition:.15s;flex:none}
-.copy:hover{background:#000}
+.copy:hover{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
 .copy svg{width:16px;height:16px}
-.done{background:var(--mint)}
-.done:hover{background:var(--mint)}
+.done{background:var(--accent-soft);color:var(--accent)}
+.done:hover{background:var(--accent-soft);color:var(--accent)}
 
 @media(max-width:900px){
   .copy{-webkit-user-select:none;user-select:none}

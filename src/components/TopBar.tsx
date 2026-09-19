@@ -9,6 +9,8 @@ import { useToast } from './Toast';
 import { useNotifications, usePartner, useSearch, type SearchHit } from '../api/hooks';
 import { useIbMonthlyCommission, useIbReferralStats, useIbReferralNotifications } from '../api/ib.hooks';
 import { Skeleton } from './Skeleton';
+import { ThemeToggle } from './Theme';
+import { BrandMark } from './Brand';
 import { usePopover } from '../lib/usePopover';
 import { usePersistentState } from '../lib/usePersistentState';
 import { decimal, relativeTime } from '../lib/format';
@@ -133,13 +135,14 @@ export const TopBar = ({ title }: { title: string }) => {
         )}
       </div>
 
-      <div className={s.mTitle}>{title}</div>
+      <div className={s.mTitle}><BrandMark /><span>Partners</span><span className="sr"> — {title}</span></div>
       <span className={s.spacer} />
 
       <div className={s.balance}>
         {isBalanceLoading ? <Skeleton width="70px" height="18px" /> : decimal(liveBalance)} <small>USD</small>
       </div>
 
+      <ThemeToggle />
       <div className={s.popAnchor} ref={bellRef}>
         <button
           className={s.iconBtn}

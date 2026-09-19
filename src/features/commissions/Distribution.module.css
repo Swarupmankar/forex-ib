@@ -4,7 +4,7 @@
 .donut{width:196px;height:196px;transform:rotate(-90deg);filter:drop-shadow(0 8px 16px rgba(11,16,22,.1))}
 .donut-core{position:absolute;text-align:center}
 .dc-num{font-size:23px;font-weight:800;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
-.dc-lab{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);
+.dc-lab{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);
   font-weight:700;margin-top:5px}
 
 .dist-rows{align-self:center}
@@ -17,11 +17,11 @@
 .dr :global(.qty){font-size:13px}
 
 .dr-head{padding:0 0 10px;border-bottom:1px solid var(--line)}
-.dr-head span{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+.dr-head span{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
 
 /* scoped under .dr so they outrank the global `.qty{color:var(--ink)}` —
    at equal specificity the winner would depend on stylesheet order */
-.dr .hi{color:#16804A;font-weight:700}
+.dr .hi{color:var(--success);font-weight:700}
 .dr .lo{color:var(--ink-3)}
 
 .foot{display:flex;gap:12px;padding:16px 24px;border-top:1px solid var(--line-soft);
@@ -29,13 +29,18 @@
 .foot svg{width:16px;height:16px;flex:none;margin-top:1px;color:var(--ink-3)}
 .foot b{color:var(--ink-2)}
 
-@media(max-width:900px){
+@media(max-width:1180px){
   .dist{grid-template-columns:1fr;gap:18px;padding:18px}
   .donut{width:158px;height:158px}
-  /* share and lots drop out; commission and per-lot are what matter on a phone */
-  .dr{grid-template-columns:10px minmax(0,1fr) auto auto;gap:12px;padding:13px 0}
-  .dr .secondary{display:none}
+}
+@media(max-width:640px){
+  /* Every figure stays available, with labels in a two-column mobile summary. */
+  .dr{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 20px;padding:18px 0;position:relative}
+  .dr i{position:absolute;left:0;top:24px}
+  .dr-n{grid-column:1 / -1;padding-left:20px;font-size:15px}
+  .dr [data-label]{text-align:left;white-space:normal;overflow-wrap:anywhere;font-size:14px}
+  .dr [data-label]::before{content:attr(data-label);display:block;font-size:11px;line-height:1.5;color:var(--ink-3);font-weight:500;margin-bottom:3px}
   .dr-head{display:none}
-  .dr-n small{font-size:10.5px}
+  .dr-n small{font-size:11px}
   .foot{padding:16px 18px}
 }
