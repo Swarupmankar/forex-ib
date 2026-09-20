@@ -4,10 +4,11 @@ import { AuthLayout } from './AuthLayout';
 import { Field, TextInput, isEmail } from './fields';
 import { ArrowLeftIcon, CheckIcon, InfoIcon } from '../components/icons';
 import s from './Auth.module.css';
+import { CLIENT_FORGOT_URL } from '../config/portalLinks';
 
 export const ForgotPasswordPage = () => {
   useEffect(() => {
-    window.location.href = `${import.meta.env.VITE_USER_PANEL_URL}/auth?mode=forgot`;
+    window.location.replace(CLIENT_FORGOT_URL);
   }, []);
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);

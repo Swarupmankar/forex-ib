@@ -6,6 +6,7 @@ import { useAuth } from './useAuth';
 import { useToast } from '../components/Toast';
 import { normalizeApiError } from '../api/errors';
 import s from './Auth.module.css';
+import { CLIENT_FORGOT_URL, CLIENT_SIGNUP_URL } from '../config/portalLinks';
 
 export const SignInPage = () => {
   const { signIn } = useAuth();
@@ -84,7 +85,7 @@ export const SignInPage = () => {
         <Field
           label="Password"
           error={submitted ? passwordError : undefined}
-          hint={<a className={s.hint} href={`${import.meta.env.VITE_USER_PANEL_URL}/auth?mode=forgot`} target="_blank" rel="noopener noreferrer">Forgot password?</a>}
+          hint={<a className={s.hint} href={CLIENT_FORGOT_URL} target="_blank" rel="noopener noreferrer">Forgot password?</a>}
         >
           {({ id, invalid }) => (
             <PasswordInput
@@ -110,7 +111,7 @@ export const SignInPage = () => {
       </form>
 
       <div className={s.alt}>
-        <span>Not a partner yet?</span> <a href={`${import.meta.env.VITE_USER_PANEL_URL}/auth?mode=signup`} target="_blank" rel="noopener noreferrer">Become a partner <span aria-hidden="true">↗</span></a>
+        <span>Not a partner yet?</span> <a href={CLIENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer">Become a partner <span aria-hidden="true">↗</span></a>
       </div>
 
 
