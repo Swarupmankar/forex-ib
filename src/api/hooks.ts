@@ -1,4 +1,3 @@
-import { referralLink } from '../lib/referral';
 import { useMemo } from 'react';
 import { TIERS, type Tier } from '../data/tiers';
 import {
@@ -60,7 +59,7 @@ export const usePartner = (): Partner => {
     : 'Partner';
   const email = user?.email || '';
   const code = ibDashboard?.referralCode || ibStats?.referralCode || '';
-  const link = referralLink(import.meta.env.VITE_USER_PANEL_URL, code);
+  const link = code ? `${import.meta.env.VITE_USER_PANEL_URL}/auth?ref=${code}` : '';
   const rawLevel = ibDashboard?.currentTier?.levelOrder || 1;
   const tierRank = Math.max(1, rawLevel) as TierRank;
 

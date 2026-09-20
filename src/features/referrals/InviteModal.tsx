@@ -4,7 +4,6 @@ import { ChatIcon, MegaphoneIcon, ShareIcon } from '../../components/icons';
 import { useToast } from '../../components/Toast';
 import type { Partner } from '../../types';
 import s from './InviteModal.module.css';
-import { ReferralQrImage, ReferralQrDownloads } from './ReferralQr';
 
 const message = (partner: Partner) =>
   `Trade with my partner link and get onboarded in minutes.\n\n${partner.referralLink}\n\nUse code ${partner.code} at sign-up.`;
@@ -49,16 +48,15 @@ export const InviteModal = ({
         <div className={s.eyebrow}>Referrals</div>
         <h3 className={s.title} id="invite-title">Invite a trader</h3>
         <div className={s.sub}>
-          Share your personal link or let a trader scan your QR code to register with your referral code.
+          Anyone who signs up through your link or code is attributed to you for life,
+          and starts earning you commission on their first closed trade.
         </div>
       </div>
 
       <div className={s.body}>
-        <div className={s.qrPass}><div><ReferralQrImage link={partner.referralLink} /></div><span><b>Scan to register</b><span>Movement Markets</span><small>Your code is included automatically.</small></span></div>
         <CopyField label="Your link" value={partner.referralLink} />
         <CopyField label="Your code" value={partner.code} />
-        <ReferralQrDownloads link={partner.referralLink} code={partner.code} />
-        <details className={s.message}><summary>Ready-made invitation</summary><CopyField label="Message" value={body} multiline /></details>
+        <CopyField label="Ready-made message" value={body} multiline />
 
         <div className={s.channels}>
           <button className={s.channel} onClick={share}>

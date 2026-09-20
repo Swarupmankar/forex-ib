@@ -1,5 +1,5 @@
 .row{display:flex;gap:10px;min-width:0;align-items:center}
-.lab{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);
+.lab{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);
   font-weight:700;margin-bottom:8px}
 .block{margin-bottom:18px}
 .block:last-child{margin-bottom:0}

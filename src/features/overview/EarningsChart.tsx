@@ -60,15 +60,15 @@ export const EarningsChart = ({
       >
         <defs>
           <linearGradient id="earningsFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--mint)" stopOpacity=".3" />
-            <stop offset="100%" stopColor="var(--mint)" stopOpacity="0" />
+            <stop offset="0%" stopColor="#2FBF71" stopOpacity=".3" />
+            <stop offset="100%" stopColor="#2FBF71" stopOpacity="0" />
           </linearGradient>
         </defs>
-        <g stroke="var(--line-soft)" strokeWidth="1">
+        <g stroke="#EEF0F4" strokeWidth="1">
           {GRID.map((y) => <line key={y} x1="0" y1={y} x2={W} y2={y} />)}
         </g>
         <path d={area} fill="url(#earningsFill)" />
-        <path d={line} fill="none" stroke="var(--mint)" strokeWidth="2.6" strokeLinecap="round" />
+        <path d={line} fill="none" stroke="#2FBF71" strokeWidth="2.6" strokeLinecap="round" />
       </svg>
       <div className={s.axis}>
         {ticks.map((t) => <span key={t.date}>{axisDate(t.date)}</span>)}

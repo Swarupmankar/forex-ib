@@ -25,7 +25,7 @@ const METHOD_ICON: Record<PayoutMethodKind, typeof BankIcon> = {
   account: CardPlainIcon,
 };
 
-const DEST_COLOURS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)'];
+const DEST_COLOURS = ['#0E3628', '#1E7A55', '#4FD394', '#C6D0DC'];
 
 const columns: Col<Payout>[] = [
   { key: 'ref', header: 'Reference', render: (p) => <span className="num">{p.id}</span> },

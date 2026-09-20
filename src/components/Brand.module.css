@@ -1,4 +1,0 @@
-.brand{display:inline-flex;align-items:center;gap:11px;color:var(--ink);line-height:1}
-.mark{width:24px;height:auto;aspect-ratio:456/495;display:block;flex:none}
-.name{display:block;font-family:'Movement Wordmark','Montserrat',sans-serif;font-size:15.5px;font-weight:300;line-height:1;letter-spacing:-.005em;white-space:nowrap}
-.name b{font-weight:700}.sub{display:block;font-family:var(--sans);font-size:10px;font-weight:400;line-height:1.4;letter-spacing:.02em;color:var(--ink-3);margin-top:6px}

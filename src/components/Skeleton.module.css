@@ -35,6 +35,3 @@
   border-radius: 6px;
   vertical-align: middle;
 }
-
-/* Both variants follow the active surface, including the neutral balance panel. */
-.skeleton,.skeletonDark{background:linear-gradient(90deg,var(--line-soft) 25%,var(--line) 37%,var(--line-soft) 63%);background-size:200% 100%}

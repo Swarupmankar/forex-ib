@@ -4,9 +4,9 @@ import { AuthLayout } from './AuthLayout';
 import { Checkbox, Field, PasswordInput, TextInput, isEmail } from './fields';
 import { useAuth } from './useAuth';
 import { useToast } from '../components/Toast';
+import { InfoIcon } from '../components/icons';
 import { normalizeApiError } from '../api/errors';
 import s from './Auth.module.css';
-import { CLIENT_FORGOT_URL, CLIENT_SIGNUP_URL } from '../config/portalLinks';
 
 export const SignInPage = () => {
   const { signIn } = useAuth();
@@ -55,14 +55,25 @@ export const SignInPage = () => {
 
   return (
     <AuthLayout>
-      <div className={s.eyebrow}>Partner account</div>
-      <h1 className={s.title}>Welcome back</h1>
+      <div className={s.eyebrow}>Partner portal</div>
+      <h1 className={s.title}>Sign in</h1>
       <p className={s.sub}>
-        Sign in to manage your network and keep your partnership moving.
+        Your referrals, commission ledger and payouts, in one place.
       </p>
 
       {apiError && (
-        <div className={s.apiError} role="alert">
+        <div
+          style={{
+            padding: '0.75rem 1rem',
+            marginBottom: '1rem',
+            borderRadius: '6px',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            color: '#f87171',
+            fontSize: '0.875rem',
+            lineHeight: '1.4',
+          }}
+        >
           {apiError}
         </div>
       )}
@@ -78,6 +89,7 @@ export const SignInPage = () => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               autoComplete="email"
+              autoFocus
             />
           )}
         </Field>
@@ -85,7 +97,7 @@ export const SignInPage = () => {
         <Field
           label="Password"
           error={submitted ? passwordError : undefined}
-          hint={<a className={s.hint} href={CLIENT_FORGOT_URL} target="_blank" rel="noopener noreferrer">Forgot password?</a>}
+          hint={<a className={s.hint} href={`${import.meta.env.VITE_USER_PANEL_URL}/auth?mode=forgot`} target="_blank" rel="noopener noreferrer">Forgot password?</a>}
         >
           {({ id, invalid }) => (
             <PasswordInput
@@ -111,10 +123,15 @@ export const SignInPage = () => {
       </form>
 
       <div className={s.alt}>
-        <span>Not a partner yet?</span> <a href={CLIENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer">Become a partner <span aria-hidden="true">↗</span></a>
+        New partner? <a href={`${import.meta.env.VITE_USER_PANEL_URL}/auth?mode=signup`} target="_blank" rel="noopener noreferrer">Apply for an account</a>
       </div>
 
-
+      <div className={s.demo}>
+        <InfoIcon />
+        <div>
+          <b>Production API mode enabled.</b> Requests are authenticated against the backend endpoint at <code>/v1/users/auth/ib-login</code>.
+        </div>
+      </div>
     </AuthLayout>
   );
 };

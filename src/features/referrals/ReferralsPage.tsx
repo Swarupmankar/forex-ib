@@ -7,8 +7,6 @@ import { Who } from '../../components/Who';
 import { useToast } from '../../components/Toast';
 import { DownloadIcon, SearchIcon, UserPlusIcon } from '../../components/icons';
 import { InviteModal } from './InviteModal';
-import { Credentials } from '../overview/Credentials';
-import { referralLink } from '../../lib/referral';
 import { useNow, usePartner } from '../../api/hooks';
 import { useIbMyReferrals, useIbReferralStats } from '../../api/ib.hooks';
 import { accountTypeName } from '../../data/rates';
@@ -42,10 +40,10 @@ export const ReferralsPage = () => {
   const [inviting, setInviting] = useState(false);
 
   const { data: myReferrals, isLoading: isReferralsLoading } = useIbMyReferrals();
-  const { data: ibStats, isLoading: isStatsLoading } = useIbReferralStats();
+  const { data: ibStats } = useIbReferralStats();
 
   const code = ibStats?.referralCode || partner.code;
-  const link = referralLink(import.meta.env.VITE_USER_PANEL_URL, code);
+  const link = `${import.meta.env.VITE_USER_PANEL_URL}/auth?ref=${code}`;
   const partnerCreds = { ...partner, code, referralLink: link };
 
   const rows: Referral[] = useMemo(() => {
@@ -155,10 +153,7 @@ export const ReferralsPage = () => {
         }
       />
 
-      <div className="stack">
-      <Credentials link={link} code={code} loading={isStatsLoading} />
       <div className="card">
-        <div className="card-head"><div><div className="card-title">Your referrals</div><div className="card-sub">Search your network and review trader activity.</div></div><span className="chip c-unfunded">{rows.length} {filtered ? 'matching' : 'traders'}</span></div>
         <div className="toolbar">
           <label className="search">
             <SearchIcon />
@@ -166,7 +161,6 @@ export const ReferralsPage = () => {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search name, email or account…"
-              aria-label="Search referrals"
             />
           </label>
           <Select ariaLabel="Filter by status" value={status} options={STATUS_OPTIONS} onChange={setStatus} />
@@ -183,7 +177,6 @@ export const ReferralsPage = () => {
         />
       </div>
 
-      </div>
       <InviteModal open={inviting} partner={partnerCreds} onClose={() => setInviting(false)} />
     </section>
   );

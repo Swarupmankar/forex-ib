@@ -9,7 +9,7 @@ import type { ReactNode, SVGProps } from 'react';
 type Props = SVGProps<SVGSVGElement>;
 
 const Icon = ({ children, ...rest }: Props & { children: ReactNode }) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false" {...rest}>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" {...rest}>
     {children}
   </svg>
 );

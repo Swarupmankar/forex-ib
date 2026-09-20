@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Skeleton } from './Skeleton';
 import s from './DataList.module.css';
 
@@ -50,7 +50,7 @@ export function DataList<T>({
       <div className={s.scroll}>
         <table
           className={s.list}
-          style={minWidth ? { '--table-min-width': `${minWidth}px` } as CSSProperties : undefined}
+          style={minWidth ? { minWidth } : undefined}
           data-secondary={roles.has('secondary')}
           data-value={roles.has('value')}
           data-indent={indentSecondary ? 'true' : undefined}
@@ -97,7 +97,7 @@ export function DataList<T>({
     <div className={s.scroll}>
       <table
         className={s.list}
-        style={minWidth ? { '--table-min-width': `${minWidth}px` } as CSSProperties : undefined}
+        style={minWidth ? { minWidth } : undefined}
         data-secondary={roles.has('secondary')}
         data-value={roles.has('value')}
         data-indent={indentSecondary ? 'true' : undefined}

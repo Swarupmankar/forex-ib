@@ -37,7 +37,7 @@ export const useDismissable = (
       const first = items[0];
       const last = items[items.length - 1];
 
-      if (e.shiftKey && (document.activeElement === first || document.activeElement === cardRef.current)) {
+      if (e.shiftKey && document.activeElement === first) {
         e.preventDefault();
         last.focus();
       } else if (!e.shiftKey && document.activeElement === last) {

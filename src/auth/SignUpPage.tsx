@@ -10,11 +10,10 @@ import { InfoIcon } from '../components/icons';
 import { TermsModal } from '../features/rewards/TermsModal';
 import { AS_OF } from '../data/fixtures';
 import s from './Auth.module.css';
-import { CLIENT_SIGNUP_URL } from '../config/portalLinks';
 
 export const SignUpPage = () => {
   useEffect(() => {
-    window.location.replace(CLIENT_SIGNUP_URL);
+    window.location.href = `${import.meta.env.VITE_USER_PANEL_URL}/auth?mode=signup`;
   }, []);
   const { signUp } = useAuth();
   const navigate = useNavigate();

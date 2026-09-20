@@ -1,10 +1,9 @@
 import { Fragment, type ComponentType, type SVGProps } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Medal } from './Medal';
-import { Brand } from './Brand';
 import { SECTIONS, type SectionId } from '../nav';
 import {
-  GridIcon, UsersIcon, DollarIcon, TrophyIcon, MegaphoneIcon, CardIcon, GearIcon, LogOutIcon, LinkIcon, WebIcon,
+  GridIcon, UsersIcon, DollarIcon, TrophyIcon, MegaphoneIcon, CardIcon, GearIcon, LogOutIcon,
 } from './icons';
 import { useAuth } from '../auth/useAuth';
 import { useToast } from './Toast';
@@ -12,7 +11,6 @@ import { useNavBadges, useNow, useOverview, usePartner } from '../api/hooks';
 import { useTierProgress } from '../lib/useTierProgress';
 import { int, usdWhole } from '../lib/format';
 import s from './Sidebar.module.css';
-import { CLIENT_LOGIN_URL, PUBLIC_SITE_URL } from '../config/portalLinks';
 
 const ICONS: Record<SectionId, ComponentType<SVGProps<SVGSVGElement>>> = {
   overview: GridIcon,
@@ -36,7 +34,13 @@ export const Sidebar = () => {
 
   return (
     <aside className={s.side}>
-      <NavLink to="/" className={s.brand} aria-label="Movement Markets partner overview"><Brand /></NavLink>
+      <div className={s.brand}>
+        <div className={s.brandMark}>IB</div>
+        <div>
+          <div className={s.brandName}>IB Portal</div>
+          <div className={s.brandSub}>Partnerships</div>
+        </div>
+      </div>
 
       <nav className={s.nav}>
         {SECTIONS.map((section, i) => {
@@ -78,11 +82,6 @@ export const Sidebar = () => {
           )}
         </div>
       </NavLink>
-
-      <div className={s.ecosystemLinks} aria-label="Movement Markets products">
-        <a className={s.ecosystemLink} href={CLIENT_LOGIN_URL}><LinkIcon /><span>Client portal</span><span aria-hidden="true">↗</span></a>
-        <a className={s.ecosystemLink} href={PUBLIC_SITE_URL}><WebIcon /><span>Main website</span><span aria-hidden="true">↗</span></a>
-      </div>
 
       <button
         className={s.signOut}
