@@ -111,10 +111,10 @@ export const CommissionsPage = () => {
       });
 
       const colors: Record<string, string> = {
-        standard: '#10b981',
-        pro: '#3b82f6',
-        raw: '#f59e0b',
-        zero: '#8b5cf6',
+        standard: 'var(--account-standard)',
+        pro: 'var(--account-pro)',
+        raw: 'var(--account-raw)',
+        zero: 'var(--account-zero)',
       };
 
       const calculatedTotalDollar = Object.values(groupMap).reduce((sum, g) => sum + g.commission, 0) || totalEarningsDollar;
@@ -145,10 +145,10 @@ export const CommissionsPage = () => {
     // Fallback: Group user's live stats into account type shares
     const totalCents = Math.round(totalEarningsDollar * 100);
     const rowConfigs = [
-      { accountType: 'standard' as AccountTypeId, colour: '#10b981', share: 0.50, ratePerLotDollar: 9.0 },
-      { accountType: 'pro' as AccountTypeId, colour: '#3b82f6', share: 0.30, ratePerLotDollar: 7.5 },
-      { accountType: 'raw' as AccountTypeId, colour: '#f59e0b', share: 0.15, ratePerLotDollar: 5.6 },
-      { accountType: 'zero' as AccountTypeId, colour: '#8b5cf6', share: 0.05, ratePerLotDollar: 6.3 },
+      { accountType: 'standard' as AccountTypeId, colour: 'var(--account-standard)', share: 0.50, ratePerLotDollar: 9.0 },
+      { accountType: 'pro' as AccountTypeId, colour: 'var(--account-pro)', share: 0.30, ratePerLotDollar: 7.5 },
+      { accountType: 'raw' as AccountTypeId, colour: 'var(--account-raw)', share: 0.15, ratePerLotDollar: 5.6 },
+      { accountType: 'zero' as AccountTypeId, colour: 'var(--account-zero)', share: 0.05, ratePerLotDollar: 6.3 },
     ];
 
     const rows: DistributionRow[] = rowConfigs.map((cfg) => {

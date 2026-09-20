@@ -5,6 +5,7 @@
 .scroll::-webkit-scrollbar-thumb:hover{background:var(--ink-3)}
 
 .empty{padding:38px 22px;text-align:center;color:var(--ink-3);font-size:13px}
+.list{min-width:var(--table-min-width,720px)}
 
 /* ================================================================
    Under 900px the table stops being a table and becomes a two-line
@@ -22,7 +23,7 @@
   .list tr{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;
     gap:3px 12px;padding:13px 16px;border-bottom:1px solid var(--line-soft);height:auto}
   .list tr:last-child{border-bottom:0}
-  .list td{padding:0;height:auto;border:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .list td{padding:0;height:auto;border:0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .list :global(.who-av){width:36px;height:36px}
   .list :global(.qty){text-align:right}
 

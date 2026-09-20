@@ -15,6 +15,7 @@ import {
   UsersTabIcon, WarningIcon,
 } from '../../components/icons';
 import { Credentials } from './Credentials';
+import { referralLink } from '../../lib/referral';
 import { EarningsChart } from './EarningsChart';
 import { useNow, useOverview, usePartner, useSeries, useMergedTiers } from '../../api/hooks';
 import { useIbReferralStats, useIbMyReferrals, useIbMonthlyCommission, useIbReferralActivity, useIbDashboard } from '../../api/ib.hooks';
@@ -61,7 +62,7 @@ export const OverviewPage = () => {
   const totalReferrals = ibStats?.totalReferrals ?? ibDashboard?.progress?.totalReferredClients ?? 0;
   const totalVolumeLots = ibStats?.totalLots ?? ibDashboard?.progress?.periodVolumeLots ?? 0;
   const code = ibStats?.referralCode || ibDashboard?.referralCode || partner.code || '';
-  const link = code ? `${import.meta.env.VITE_USER_PANEL_URL}/auth?ref=${code}` : '';
+  const link = referralLink(import.meta.env.VITE_USER_PANEL_URL, code);
 
   const referralRows: Referral[] = ibReferrals
     ? ibReferrals.map((r, i) => {
@@ -96,7 +97,7 @@ export const OverviewPage = () => {
     id: a.id,
     tone: a.tone,
     icon: ACTIVITY_ICONS[a.icon] || <DollarIcon strokeWidth={2} />,
-    body: a.who ? <><b>{a.who}</b>{a.text}</> : a.text,
+    body: a.who ? <><b>{a.who}</b>{' '}{a.text}</> : a.text,
     time: a.meta,
     amount:
       a.amount === undefined

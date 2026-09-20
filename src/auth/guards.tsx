@@ -8,8 +8,8 @@ const LoadingSpinner = () => (
       alignItems: 'center',
       justifyContent: 'center',
       minHeight: '100vh',
-      backgroundColor: 'var(--bg-main, #0b0f19)',
-      color: 'var(--text-muted, #94a3b8)',
+      backgroundColor: 'var(--bg)',
+      color: 'var(--ink-2)',
       fontFamily: 'var(--font-sans, system-ui, sans-serif)',
       fontSize: '0.95rem',
     }}

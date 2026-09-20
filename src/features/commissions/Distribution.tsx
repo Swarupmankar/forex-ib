@@ -73,15 +73,15 @@ export const Distribution = ({ data }: { data: DistributionData }) => {
               <span className={s.drN}>
                 {accountTypeName(row.accountType)}
                 <small>
-                  {row.traders} traders · {row.accountType === 'standard' || row.accountType === 'pro'
+                  {row.traders} {row.traders === 1 ? 'trader' : 'traders'} · {row.accountType === 'standard' || row.accountType === 'pro'
                     ? 'spread-based'
                     : 'commission a/c'}
                 </small>
               </span>
-              <span className="qty">{usd(row.commission)}</span>
-              <span className={`qty ${s.secondary}`}>{pct0(share)}</span>
-              <span className={`qty ${s.secondary}`}>{lots(row.lots)}</span>
-              <span className={`qty ${row.perLot === best.perLot ? s.hi : row.perLot === Math.min(...data.rows.map((r) => r.perLot)) ? s.lo : ''}`}>
+              <span className="qty" data-label="Commission">{usd(row.commission)}</span>
+              <span className={`qty ${s.secondary}`} data-label="Share">{pct0(share)}</span>
+              <span className={`qty ${s.secondary}`} data-label="Lots">{lots(row.lots)}</span>
+              <span data-label="Per lot" className={`qty ${row.perLot === best.perLot ? s.hi : row.perLot === Math.min(...data.rows.map((r) => r.perLot)) ? s.lo : ''}`}>
                 {usd(row.perLot)}
               </span>
             </div>

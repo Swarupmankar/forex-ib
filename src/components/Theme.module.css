@@ -1,0 +1,4 @@
+.toggle{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;color:var(--ink-2);flex:none;transition:background .16s,color .16s}
+.toggle:hover{background:var(--surface-2);color:var(--ink)}
+.toggle svg{display:block;width:20px;height:20px}
+@media(max-width:900px){.toggle{width:44px;height:44px}}
