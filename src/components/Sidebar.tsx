@@ -4,7 +4,7 @@ import { Medal } from './Medal';
 import { Brand } from './Brand';
 import { SECTIONS, type SectionId } from '../nav';
 import {
-  GridIcon, UsersIcon, DollarIcon, TrophyIcon, MegaphoneIcon, CardIcon, GearIcon, LogOutIcon,
+  GridIcon, UsersIcon, DollarIcon, TrophyIcon, MegaphoneIcon, CardIcon, GearIcon, LogOutIcon, LinkIcon, WebIcon,
 } from './icons';
 import { useAuth } from '../auth/useAuth';
 import { useToast } from './Toast';
@@ -12,6 +12,7 @@ import { useNavBadges, useNow, useOverview, usePartner } from '../api/hooks';
 import { useTierProgress } from '../lib/useTierProgress';
 import { int, usdWhole } from '../lib/format';
 import s from './Sidebar.module.css';
+import { CLIENT_LOGIN_URL, PUBLIC_SITE_URL } from '../config/portalLinks';
 
 const ICONS: Record<SectionId, ComponentType<SVGProps<SVGSVGElement>>> = {
   overview: GridIcon,
@@ -77,6 +78,11 @@ export const Sidebar = () => {
           )}
         </div>
       </NavLink>
+
+      <div className={s.ecosystemLinks} aria-label="Movement Markets products">
+        <a className={s.ecosystemLink} href={CLIENT_LOGIN_URL}><LinkIcon /><span>Client portal</span><span aria-hidden="true">↗</span></a>
+        <a className={s.ecosystemLink} href={PUBLIC_SITE_URL}><WebIcon /><span>Main website</span><span aria-hidden="true">↗</span></a>
+      </div>
 
       <button
         className={s.signOut}

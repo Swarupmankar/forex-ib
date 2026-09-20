@@ -4,13 +4,17 @@ import { Brand } from '../components/Brand';
 import { ThemeToggle } from '../components/Theme';
 import { ChartIcon, LinkIcon, TrophyIcon, LockIcon } from '../components/icons';
 import s from './Auth.module.css';
+import { CLIENT_LOGIN_URL, PUBLIC_SITE_URL } from '../config/portalLinks';
 
 export const AuthLayout = ({ children }: { children: ReactNode }) => (
   <div className={s.page}>
     <header className={s.pageHeader}>
       <Link to="/signin" aria-label="Movement Markets partner portal"><Brand /></Link>
       <div className={s.headerActions}>
-        <a className={s.clientLink} href={`${import.meta.env.VITE_USER_PANEL_URL}/auth`} aria-label="Open client portal"><span>Client portal</span><span aria-hidden="true">↗</span></a>
+        <div className={s.ecosystemLinks}>
+          <a className={s.ecosystemLink} href={PUBLIC_SITE_URL}><span>Website</span><span aria-hidden="true">↗</span></a>
+          <a className={s.ecosystemLink} href={CLIENT_LOGIN_URL}><span>Client portal</span><span aria-hidden="true">↗</span></a>
+        </div>
         <ThemeToggle />
       </div>
     </header>

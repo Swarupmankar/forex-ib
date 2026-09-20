@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Medal } from './Medal';
-import { CardPlainIcon, ChatIcon, ChevronRightIcon, GearIcon, LogOutIcon, MegaphoneIcon } from './icons';
+import { CardPlainIcon, ChatIcon, ChevronRightIcon, GearIcon, LogOutIcon, MegaphoneIcon, LinkIcon, WebIcon } from './icons';
 import { useAuth } from '../auth/useAuth';
 import { useToast } from './Toast';
 import { SECTIONS, TAB_IDS, type SectionId } from '../nav';
@@ -10,6 +10,7 @@ import { useDismissable } from '../lib/useDismissable';
 import { useNavBadges, usePartner } from '../api/hooks';
 import { tierByRank } from '../data/tiers';
 import s from './MoreSheet.module.css';
+import { CLIENT_LOGIN_URL, PUBLIC_SITE_URL } from '../config/portalLinks';
 
 const ICONS: Partial<Record<SectionId, typeof GearIcon>> = {
   marketing: MegaphoneIcon,
@@ -82,6 +83,18 @@ export const MoreSheet = ({
           <span>Contact your partner manager</span>
           <ChevronRightIcon className={s.chev} />
         </button>
+
+        <a className={s.row} href={CLIENT_LOGIN_URL}>
+          <LinkIcon />
+          <span>Open client portal</span>
+          <ChevronRightIcon className={s.chev} />
+        </a>
+
+        <a className={s.row} href={PUBLIC_SITE_URL}>
+          <WebIcon />
+          <span>Visit Movement Markets</span>
+          <ChevronRightIcon className={s.chev} />
+        </a>
 
         <button
           className={`${s.row} ${s.danger}`}
