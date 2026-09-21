@@ -1,7 +1,8 @@
 /* Finite, interaction-led motion. The reflection resets instantly after hover. */
 .tier-jewel{isolation:isolate;display:block;flex-shrink:0;aspect-ratio:120/136;object-fit:contain}
 .tier-jewel .jewel-body{transform-origin:60px 65px;transition:transform 360ms cubic-bezier(.2,.8,.2,1)}
-.tier-jewel .jewel-sheen{animation:jewel-intro 1000ms ease-out var(--jewel-delay,0ms) both;pointer-events:none}
+.tier-jewel .jewel-sheen{animation:jewel-intro 1100ms cubic-bezier(.2,.65,.3,1) var(--jewel-delay,0ms) both paused;pointer-events:none}
+.tier-jewel[data-revealed="true"] .jewel-sheen{animation-play-state:running}
 .tier-jewel .jewel-hover-sheen{transform:translateX(-50px);pointer-events:none}
 @media(hover:hover) and (pointer:fine){
  button:hover .tier-jewel .jewel-body,.tier-jewel:hover .jewel-body{transform:translateY(-2px)}
