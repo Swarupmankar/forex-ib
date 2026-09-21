@@ -8,7 +8,7 @@ import {
 } from './icons';
 import { useAuth } from '../auth/useAuth';
 import { useToast } from './Toast';
-import { useNavBadges, useNow, useOverview, usePartner } from '../api/hooks';
+import { useNavBadges, useNow, useOverview, usePartner, useMergedTiers } from '../api/hooks';
 import { useTierProgress } from '../lib/useTierProgress';
 import { int, usdWhole } from '../lib/format';
 import s from './Sidebar.module.css';
@@ -31,7 +31,8 @@ export const Sidebar = () => {
   const partner = usePartner();
   const overview = useOverview();
   const badges = useNavBadges();
-  const progress = useTierProgress(partner.tier, overview.volume30d, overview.activeTraders, now);
+  const tiers = useMergedTiers();
+  const progress = useTierProgress(partner.tier, overview.volume30d, overview.activeTraders, now, tiers);
   const { current, next } = progress;
 
   return (

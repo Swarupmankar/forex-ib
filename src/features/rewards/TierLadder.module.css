@@ -6,9 +6,9 @@
 .card:focus-visible{outline-offset:-4px}
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;width:100%;min-height:64px}
 .top :global(.flag){font-size:10px;padding:5px 8px}
-.station{display:block;width:56px;height:auto;aspect-ratio:120/136;flex:none;filter:drop-shadow(0 4px 6px #00000012);transition:transform .2s}
+.station{display:block;width:72px;height:auto;aspect-ratio:120/136;flex:none;filter:drop-shadow(0 4px 6px #00000012);transition:transform .2s}
 .card:hover .station{transform:translateY(-2px)}
-.rung[data-s="locked"] .station{filter:saturate(.65) drop-shadow(0 4px 6px #00000012)}
+.rung[data-s="locked"] .station{filter:drop-shadow(0 4px 6px #00000012)}
 .title{font-family:var(--display);font-size:18px;font-weight:600;letter-spacing:-.025em;line-height:1.3}
 .req{font-size:11px;line-height:1.6;color:var(--ink-3);margin:6px 0 20px}
 .uplift{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding-top:15px;width:100%;margin-bottom:14px}
@@ -22,5 +22,5 @@
 .gate+.gate{margin-top:12px}.gate-top{display:flex;flex-direction:column;gap:4px;margin-bottom:7px}.gate-lab{font-size:10px;color:var(--ink-3)}.gate-val{font-size:11px;font-family:var(--mono);color:var(--ink-2)}.gate-val em{font-style:normal;font-weight:600;color:var(--ink)}
 .gate :global(.met){font-size:11px}.gbar{height:4px;border-radius:8px;background:var(--line);overflow:hidden}.gbar i{display:block;height:100%;border-radius:8px;background:var(--accent)}.gate[data-met="true"] .gbar i{background:var(--success)}
 @media(max-width:1200px){.ladder{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:600px){.ladder{grid-template-columns:1fr;padding:2px 18px 18px;gap:12px}.card{padding:18px}.top{margin-bottom:14px}.station{width:48px}.req{margin-bottom:16px}.rewards{padding-bottom:16px}}
+@media(max-width:600px){.ladder{grid-template-columns:1fr;padding:2px 18px 18px;gap:12px}.card{padding:18px}.top{margin-bottom:14px}.station{width:64px}.req{margin-bottom:16px}.rewards{padding-bottom:16px}}
 @media(prefers-reduced-motion:reduce){.rung,.station{transition:none}.card:hover .station{transform:none}}

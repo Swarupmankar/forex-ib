@@ -5,15 +5,14 @@ import { Select } from '../../components/Select';
 import { DownloadIcon } from '../../components/icons';
 import { Skeleton } from '../../components/Skeleton';
 import { Distribution } from './Distribution';
+import { buildDistribution } from './distributionData';
 import { RateCard } from './RateCard';
 import { useToast } from '../../components/Toast';
 import { useLedgerTraders, useNow, usePartner } from '../../api/hooks';
 import {
   useIbMonthlyCommission,
   useIbCommissionTiers,
-  useIbReferralStats,
   useIbCommissionLedger,
-  useIbDashboard,
 } from '../../api/ib.hooks';
 import { accountTypeName } from '../../data/rates';
 import { downloadCsv, stampedName } from '../../lib/download';
@@ -22,9 +21,6 @@ import type {
   DistributionWindow,
   LedgerEntry,
   LedgerWindow,
-  Distribution as DistributionData,
-  DistributionRow,
-  AccountTypeId,
 } from '../../types';
 
 const WINDOW_OPTIONS: { value: DistributionWindow; label: string }[] = [
@@ -67,113 +63,14 @@ export const CommissionsPage = () => {
   const traders = useLedgerTraders();
 
   // Live Backend Queries
-  const { data: ibStats } = useIbReferralStats();
   const { data: monthlyReport, isLoading: isMonthlyLoading } = useIbMonthlyCommission();
-  const { data: ledgerData } = useIbCommissionLedger(1, 100);
-  const { data: dashboardData } = useIbDashboard();
+  const { data: ledgerData, isLoading: isDistributionLoading, isError: isDistributionError } = useIbCommissionLedger(1, 100);
   useIbCommissionTiers();
 
-  // Dynamic Distribution breakdown bound to user's real data
-  const distribution: DistributionData = useMemo(() => {
-    const totalEarningsDollar =
-      monthlyReport?.stats?.totalEarnings ??
-      ibStats?.totalCommission ??
-      dashboardData?.earnings?.confirmedCommission ??
-      0;
-
-    const totalLots =
-      ibStats?.totalLots ??
-      dashboardData?.progress?.periodVolumeLots ??
-      monthlyReport?.monthlyData.reduce((acc, m) => acc + m.totalLots, 0) ??
-      0;
-
-    const totalTraders =
-      ibStats?.totalReferrals ??
-      dashboardData?.progress?.activeTradersCount ??
-      0;
-
-    const rawLedger = ledgerData?.ledger || [];
-
-    if (rawLedger.length > 0) {
-      const groupMap: Record<string, { commission: number; lots: number; tradersSet: Set<string> }> = {
-        standard: { commission: 0, lots: 0, tradersSet: new Set() },
-        pro: { commission: 0, lots: 0, tradersSet: new Set() },
-        raw: { commission: 0, lots: 0, tradersSet: new Set() },
-        zero: { commission: 0, lots: 0, tradersSet: new Set() },
-      };
-
-      rawLedger.forEach((item) => {
-        const accKey = (item.accountType || 'standard').toLowerCase();
-        const key = groupMap[accKey] ? accKey : 'standard';
-        groupMap[key].commission += Number(item.amount || 0);
-        groupMap[key].lots += Number(item.closedLots || 0);
-        if (item.tradeCloseEventId) groupMap[key].tradersSet.add(item.tradeCloseEventId);
-      });
-
-      const colors: Record<string, string> = {
-        standard: 'var(--account-standard)',
-        pro: 'var(--account-pro)',
-        raw: 'var(--account-raw)',
-        zero: 'var(--account-zero)',
-      };
-
-      const calculatedTotalDollar = Object.values(groupMap).reduce((sum, g) => sum + g.commission, 0) || totalEarningsDollar;
-
-      const rows: DistributionRow[] = Object.entries(groupMap).map(([accType, data]) => {
-        const comm = data.commission;
-        const lts = data.lots;
-        const trd = data.tradersSet.size || Math.max(1, Math.round(totalTraders * 0.25));
-        const perLotDollar = lts > 0 ? comm / lts : 9.0;
-        return {
-          accountType: accType as AccountTypeId,
-          colour: colors[accType],
-          commission: Math.round(comm * 100),
-          lots: lts,
-          traders: trd,
-          perLot: Math.round(perLotDollar * 100),
-        };
-      });
-
-      return {
-        window,
-        total: Math.round(calculatedTotalDollar * 100),
-        activeTraders: totalTraders,
-        rows,
-      };
-    }
-
-    // Fallback: Group user's live stats into account type shares
-    const totalCents = Math.round(totalEarningsDollar * 100);
-    const rowConfigs = [
-      { accountType: 'standard' as AccountTypeId, colour: 'var(--account-standard)', share: 0.50, ratePerLotDollar: 9.0 },
-      { accountType: 'pro' as AccountTypeId, colour: 'var(--account-pro)', share: 0.30, ratePerLotDollar: 7.5 },
-      { accountType: 'raw' as AccountTypeId, colour: 'var(--account-raw)', share: 0.15, ratePerLotDollar: 5.6 },
-      { accountType: 'zero' as AccountTypeId, colour: 'var(--account-zero)', share: 0.05, ratePerLotDollar: 6.3 },
-    ];
-
-    const rows: DistributionRow[] = rowConfigs.map((cfg) => {
-      const commCents = Math.round(totalCents * cfg.share);
-      const commDollar = commCents / 100;
-      const lotsVal = cfg.ratePerLotDollar > 0 ? Number((commDollar / cfg.ratePerLotDollar).toFixed(2)) : 0;
-      const tradersVal = Math.max(1, Math.round(totalTraders * cfg.share));
-
-      return {
-        accountType: cfg.accountType,
-        colour: cfg.colour,
-        commission: commCents,
-        lots: lotsVal > 0 ? lotsVal : Number((totalLots * cfg.share).toFixed(2)),
-        traders: tradersVal,
-        perLot: Math.round(cfg.ratePerLotDollar * 100),
-      };
-    });
-
-    return {
-      window,
-      total: totalCents,
-      activeTraders: totalTraders,
-      rows,
-    };
-  }, [window, monthlyReport, ibStats, ledgerData, dashboardData]);
+  const distribution = useMemo(
+    () => buildDistribution(ledgerData?.ledger ?? [], window, new Date(now).getTime()),
+    [ledgerData, window, now],
+  );
 
   const entries: LedgerEntry[] = useMemo(() => {
     if (!monthlyReport || monthlyReport.monthlyData.length === 0) {
@@ -243,10 +140,10 @@ export const CommissionsPage = () => {
               <div className="card-title">Where your commission comes from</div>
               <div className="card-sub">
                 {WINDOW_OPTIONS.find((w) => w.value === window)?.label} ·{' '}
-                {isMonthlyLoading
+                {isDistributionLoading
                   ? <Skeleton width="80px" height="16px" />
-                  : usd(monthlyReport ? Math.round(monthlyReport.stats.totalEarnings * 100) : 0)}{' '}
-                across live traders
+                  : usd(distribution.total)}{' '}
+                in recorded commission
               </div>
             </div>
             <Select
@@ -256,7 +153,10 @@ export const CommissionsPage = () => {
               onChange={setWindow}
             />
           </div>
-          <Distribution data={distribution} />
+          {isDistributionLoading ? <div className="card-pad" role="status" aria-label="Loading commission breakdown"><Skeleton width="100%" height="260px" /></div>
+            : isDistributionError ? <p className="card-pad sub" role="status">Commission breakdown could not be loaded. Please try again shortly.</p>
+            : <Distribution data={distribution} />}
+          <p className="distribution-note">Based on positive commission in the latest {ledgerData?.ledger.length ?? 0} loaded ledger entries. {Number(ledgerData?.pagination?.totalPages) > 1 ? 'More entries exist; this is a partial breakdown.' : 'Reversals are excluded.'}</p>
         </div>
 
         <RateCard tier={partner.tier} />

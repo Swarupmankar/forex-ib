@@ -7,14 +7,16 @@ import s from './Hero.module.css';
 export const Hero = ({
   children,
   single,
+  className = '',
   secondOrb = true,
 }: {
   children: ReactNode;
   /** single-column hero (Payouts) */
   single?: boolean;
+  className?: string;
   secondOrb?: boolean;
 }) => (
-  <div className={s.hero}>
+  <div className={`${s.hero} ${className}`}>
     <span className={`${s.orb} ${s.orbA}`} />
     {secondOrb && <span className={`${s.orb} ${s.orbB}`} />}
     <div className={`${s.heroIn}${single ? ` ${s.single}` : ''}`}>{children}</div>

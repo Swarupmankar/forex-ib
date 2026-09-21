@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { MotionRegion } from './MotionRegion';
 import { Outlet, useLocation } from 'react-router-dom';
 import { TAB_IDS, sectionByPath } from '../nav';
 import { Sidebar } from './Sidebar';
@@ -10,13 +11,13 @@ import { usePartner } from '../api/hooks';
 import s from './AppShell.module.css';
 
 export const AppShell = () => {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const section = sectionByPath(pathname);
   const [moreOpen, setMoreOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const partner = usePartner();
 
-  // the mockup jumps to the top on every section change
+  // Keep the shell in place and reset only the new section’s scroll position.
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
     setMoreOpen(false);
@@ -28,7 +29,7 @@ export const AppShell = () => {
         <Sidebar />
         <div className={s.main}>
           <TopBar title={section.title} />
-          <Outlet />
+          <MotionRegion motionKey={pathname + search}><Outlet /></MotionRegion>
         </div>
       </div>
 

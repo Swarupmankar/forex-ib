@@ -11,7 +11,7 @@
 .med-wrap{position:relative;display:grid;place-items:center;margin-bottom:14px}
 .med-wrap::before{content:"";position:absolute;width:170px;height:170px;border-radius:50%;
   background:radial-gradient(circle,rgba(47,191,113,.34),transparent 62%);filter:blur(24px)}
-.med{position:relative;width:104px;height:118px;filter:drop-shadow(0 18px 26px rgba(0,0,0,.62));
+.med{position:relative;width:104px;height:118px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.24));
   animation:bobm 6s ease-in-out infinite}
 @keyframes bobm{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
 
@@ -62,3 +62,13 @@
 .mrew-i{background:var(--accent-soft);color:var(--accent);box-shadow:none}
 
 .hero{background:#151a1c}.hero::after,.orb,.med-wrap::before{display:none}.med{animation:none}.rank,.sub{color:#b0babf}.flag[data-s="done"]{color:#b0f000}
+/* A short reveal follows opening the details; no perpetual floating. */
+.hero{display:grid;grid-template-columns:100px minmax(0,1fr);column-gap:24px;text-align:left;padding:32px 58px 28px 28px;background:#161616;align-items:center}
+.med-wrap{grid-row:1/5;margin:0}.med{width:100px;height:auto;animation:medal-reveal .55s cubic-bezier(.2,.8,.2,1) both;transform-origin:center bottom}
+.rank{font:11px/1.5 var(--sans);letter-spacing:0;text-transform:none;color:#aab0b6}.title{font-family:var(--display);font-size:26px;font-weight:500;margin:7px 0}.sub{font:12px/1.5 var(--sans);color:#bcc2c7;margin:0}.flag{justify-self:start;text-transform:none;letter-spacing:0;font-size:10px;margin-top:12px;padding:4px 9px}.flag[data-s='now']{background:#b0f000;color:#162000;border-color:#b0f000}
+.bonus{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2);margin-bottom:24px}.bonus>div{display:flex;flex-direction:column;gap:5px}.bonus span{font-size:11px;color:var(--ink-2)}.bonus strong{font-family:var(--display);font-size:30px;font-weight:500;letter-spacing:-.04em}.bonus .bonus-note{font-size:10px;line-height:1.65;text-align:right}
+.ms-h{font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);margin-bottom:8px}.mrew{padding:14px 0;animation:reward-enter .3s ease-out both}.mrew-i{width:38px;height:38px;border-radius:11px}.mrew-i svg{width:18px;height:18px}.mrew-t{font-weight:500}.mrew-d{line-height:1.65}.ms{margin-bottom:26px}.mrow{padding:13px 0}.mnote{border-left:2px solid var(--line-strong);border-radius:0;background:transparent;padding:4px 0 4px 12px}
+@keyframes medal-reveal{from{opacity:0;transform:perspective(500px) rotateY(-28deg) scale(.9)}to{opacity:1;transform:perspective(500px) rotateY(0) scale(1)}}
+@keyframes reward-enter{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@media(max-width:600px){.hero{grid-template-columns:76px minmax(0,1fr);gap:0 16px;padding:30px 50px 25px 20px}.med{width:76px}.title{font-size:22px}.rank{font-size:10px}.sub{font-size:11px}.bonus{gap:12px;padding:16px}.bonus strong{font-size:26px}.bonus .bonus-note{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.med,.mrew{animation:none}}

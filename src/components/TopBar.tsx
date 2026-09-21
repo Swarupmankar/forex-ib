@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  BellIcon, BoxFlatIcon, CheckIcon, ClockIcon, DollarIcon, GearIcon, LogOutIcon,
+  BellIcon, BoxFlatIcon, CheckIcon, ClockIcon, DollarIcon, ProfileIcon, LogOutIcon,
   SearchIcon, ShieldIcon, UsersTabIcon, WarningIcon,
 } from './icons';
 import { useAuth } from '../auth/useAuth';
@@ -193,10 +193,11 @@ export const TopBar = ({ title }: { title: string }) => {
         )}
       </div>
 
-      <div className={s.popAnchor} ref={menuRef}>
+      <div className={s.popAnchor} ref={menuRef} onKeyDown={event=>{if(event.key==='Escape'){setMenuOpen(false);menuRef.current?.querySelector('button')?.focus();}}}>
         <button
           className={s.avatar}
           aria-label="Account menu"
+          aria-controls={menuOpen ? "partner-account-menu" : undefined}
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen((v) => !v)}
         >
@@ -204,7 +205,7 @@ export const TopBar = ({ title }: { title: string }) => {
         </button>
 
         {menuOpen && (
-          <div className={`${s.panel} ${s.menu}`}>
+          <div className={`${s.panel} ${s.menu}`} id="partner-account-menu">
             <div className={s.menuMe}>
               <div className={s.menuName}>{session?.name ?? partner.name}</div>
               <div className={s.menuMail}>{session?.email ?? partner.email}</div>
@@ -216,7 +217,7 @@ export const TopBar = ({ title }: { title: string }) => {
                 navigate('/settings');
               }}
             >
-              <GearIcon /> Settings
+              <ProfileIcon /> My profile
             </button>
             <button
               className={`${s.menuRow} ${s.danger}`}

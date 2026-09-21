@@ -12,7 +12,6 @@ import { TierModal } from './TierModal';
 import { TermsModal } from './TermsModal';
 import { useNow, useOverview, usePartner, useRewardHistory, useMergedTiers } from '../../api/hooks';
 import { useTierProgress } from '../../lib/useTierProgress';
-import { tierAchievedAt } from '../../data/fixtures';
 import { int, lots, pct0, shortDate, usdWhole } from '../../lib/format';
 import type { RewardHistoryItem, TierRank } from '../../types';
 
@@ -81,7 +80,7 @@ export const RewardsPage = () => {
               </span>
               <HeroNote>
                 {current.upliftLabel} on every base rate
-                {current.cashBonus ? ` · ${usdWhole(current.cashBonus)} bonus paid` : ''}
+                {current.cashBonus ? ` · ${usdWhole(current.cashBonus)} one-time bonus` : ''}
               </HeroNote>
             </HeroFoot>
 
@@ -147,7 +146,7 @@ export const RewardsPage = () => {
             progress={progress}
             volume={overview.volume30d}
             traders={overview.activeTraders}
-            achievedAt={tierAchievedAt}
+            achievedAt={{}}
             tiers={tiers}
             onSelect={setOpenTier}
           />
@@ -170,7 +169,7 @@ export const RewardsPage = () => {
         current={partner.tier}
         volume={overview.volume30d}
         traders={overview.activeTraders}
-        achievedAt={tierAchievedAt}
+        achievedAt={{}}
         tiers={tiers}
         onClose={() => setOpenTier(null)}
       />

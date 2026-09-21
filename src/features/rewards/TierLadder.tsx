@@ -1,15 +1,19 @@
 import { Medal } from '../../components/Medal';
 import { CheckIcon } from '../../components/icons';
-import { REWARD_ICONS, TIERS, rungState, tierFlag, type Tier } from '../../data/tiers';
-import { int, lots } from '../../lib/format';
+import { REWARD_ICONS, TIERS, parseBenefitsList, rungState, tierFlag, type Tier, type TierReward } from '../../data/tiers';
+import { int, lots, usdWhole } from '../../lib/format';
 import type { TierProgress } from '../../lib/useTierProgress';
 import type { TierRank } from '../../types';
 import s from './TierLadder.module.css';
 
-const RewardChips = ({ tier }: { tier: Tier }) => (
+const RewardChips = ({ tier }: { tier: Tier }) => {
+  const benefits = parseBenefitsList(tier.bonusBenefitsText);
+  const rewards: TierReward[] = benefits.length ? benefits.map(title => ({icon: 'box' as const,title,detail:''})) : tier.rewards.filter(r=>r.icon !== 'cash');
+  return (
   <span className={s.rewards}>
     {/* the ladder shows three; the detail modal shows the full list */}
-    {tier.rewards.slice(0, 3).map((r) => {
+    {Boolean(tier.cashBonus) && <span className={`${s.rw} ${s.cash}`}>{usdWhole(tier.cashBonus!)} one-time bonus</span>}
+    {rewards.slice(0, 2).map((r) => {
       const Icon = REWARD_ICONS[r.icon];
       const tone = r.chip === 'cash' ? ` ${s.cash}` : r.chip === 'star' ? ` ${s.star}` : '';
       return (
@@ -20,6 +24,7 @@ const RewardChips = ({ tier }: { tier: Tier }) => (
     })}
   </span>
 );
+};
 
 /** Both gates toward the next tier, shown on the rung you're standing on. */
 const CurrentGates = ({ progress, volume, traders }: {

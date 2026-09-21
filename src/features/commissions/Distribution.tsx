@@ -1,105 +1,65 @@
-import { InfoIcon } from '../../components/icons';
+import { useState, type CSSProperties } from 'react';
 import { accountTypeName } from '../../data/rates';
-import { lots, pct0, usd, usdWhole } from '../../lib/format';
-import type { Distribution as DistributionData } from '../../types';
+import { lots, pct0, usd } from '../../lib/format';
+import type { Distribution as DistributionData, AccountTypeId } from '../../types';
 import s from './Distribution.module.css';
 
-/**
- * Donut geometry. Each arc is a dash on one circle: `dasharray` is
- * "visible gap", `dashoffset` walks the start point round. The 4-unit gap and
- * the 2.4 trimmed off each arc account for the round line caps, which extend
- * every segment by half the stroke width at both ends.
- */
-const R = 54;
-const CIRCUMFERENCE = 2 * Math.PI * R;
-const GAP = 4;
-const CAP_TRIM = 2.4;
-
-const arcs = (data: DistributionData) => {
-  let cursor = 0;
-  return data.rows.map((row) => {
-    const share = row.commission / data.total;
-    const length = Math.max(0, share * CIRCUMFERENCE - CAP_TRIM);
-    const offset = -cursor;
-    cursor += length + GAP;
-    return { row, share, length, offset };
-  });
-};
+const R = 94;
+const C = 2 * Math.PI * R;
+const CENTER = 120;
 
 export const Distribution = ({ data }: { data: DistributionData }) => {
-  const segments = arcs(data);
-  const totalLots = data.rows.reduce((sum, r) => sum + r.lots, 0);
-
-  const raw = data.rows.find((r) => r.accountType === 'raw');
-  const best = data.rows.reduce((a, b) => (a.perLot > b.perLot ? a : b));
-
-  return (
-    <>
-      <div className={s.dist}>
-        <div className={s.donutWrap}>
-          <svg className={s.donut} viewBox="0 0 140 140" role="img" aria-label="Commission by account type">
-            <circle cx="70" cy="70" r={R} fill="none" stroke="var(--line-soft)" strokeWidth="15" />
-            {segments.map(({ row, length, offset }) => (
-              <circle
-                key={row.accountType}
-                cx="70" cy="70" r={R} fill="none"
-                stroke={row.colour}
-                strokeWidth="15"
-                strokeDasharray={`${length.toFixed(1)} ${(CIRCUMFERENCE - length).toFixed(1)}`}
-                strokeDashoffset={offset.toFixed(1)}
-                strokeLinecap="round"
-              />
-            ))}
-          </svg>
-          <div className={s.donutCore}>
-            <div className={s.dcNum}>{usdWhole(data.total)}</div>
-            <div className={s.dcLab}>last {data.window.replace('d', ' days')}</div>
-          </div>
-        </div>
-
-        <div className={s.distRows}>
-          <div className={`${s.dr} ${s.drHead}`}>
-            <span />
-            <span>Account type</span>
-            <span className="qty">Commission</span>
-            <span className={`qty ${s.secondary}`}>Share</span>
-            <span className={`qty ${s.secondary}`}>Lots</span>
-            <span className="qty">Per lot</span>
-          </div>
-
-          {segments.map(({ row, share }) => (
-            <div className={s.dr} key={row.accountType}>
-              <i style={{ background: row.colour }} />
-              <span className={s.drN}>
-                {accountTypeName(row.accountType)}
-                <small>
-                  {row.traders} {row.traders === 1 ? 'trader' : 'traders'} · {row.accountType === 'standard' || row.accountType === 'pro'
-                    ? 'spread-based'
-                    : 'commission a/c'}
-                </small>
-              </span>
-              <span className="qty" data-label="Commission">{usd(row.commission)}</span>
-              <span className={`qty ${s.secondary}`} data-label="Share">{pct0(share)}</span>
-              <span className={`qty ${s.secondary}`} data-label="Lots">{lots(row.lots)}</span>
-              <span data-label="Per lot" className={`qty ${row.perLot === best.perLot ? s.hi : row.perLot === Math.min(...data.rows.map((r) => r.perLot)) ? s.lo : ''}`}>
-                {usd(row.perLot)}
-              </span>
-            </div>
-          ))}
+  const [selected,setSelected] = useState<AccountTypeId|null>(null);
+  const [hovered,setHovered] = useState<AccountTypeId|null>(null);
+  const [focused,setFocused] = useState<AccountTypeId|null>(null);
+  const total = data.rows.reduce((sum,row)=>sum+Math.max(0,row.commission),0);
+  const active = data.rows.find(row=>row.accountType===(hovered??focused??selected));
+  const positiveCount = data.rows.filter(row=>row.commission>0).length;
+  let cursor = 0;
+  const segments = data.rows.map(row=>{
+    const share = total>0?Math.max(0,row.commission)/total:0;
+    const gap = positiveCount>1?Math.min(4,share*C*.2):0;
+    const start = cursor+gap/2;
+    const middle = (cursor+share*C/2)/C*Math.PI*2-Math.PI/2;
+    cursor+=share*C;
+    return {row,share,start,length:Math.max(0,share*C-gap),x:CENTER+Math.cos(middle)*R,y:CENTER+Math.sin(middle)*R};
+  });
+  return <div className={s.dist}>
+    <div className={s.visual}>
+      <div className={s.donutWrap}>
+        <svg className={s.donut} viewBox="0 0 240 240" role="img" aria-label={total?`Commission by account type, total ${usd(total)}`:'No commission recorded in this period'}>
+          <circle cx={CENTER} cy={CENTER} r={R} fill="none" stroke="var(--line-soft)" strokeWidth="27"/>
+          <g transform="rotate(-90 120 120)">{segments.filter(seg=>seg.length>0).map(({row,length,start})=><circle key={row.accountType}
+            className={s.segment} data-muted={!!active&&active.accountType!==row.accountType}
+            cx={CENTER} cy={CENTER} r={R} fill="none" stroke={row.colour} strokeWidth="27"
+            strokeDasharray={`${length} ${C-length}`} strokeDashoffset={-start}
+            onMouseEnter={()=>setHovered(row.accountType)} onMouseLeave={()=>setHovered(null)}
+          ><title>{accountTypeName(row.accountType)}: {usd(row.commission)}</title></circle>)}</g>
+          {segments.filter(seg=>seg.share>=.08).map(({row,share,x,y})=><text key={row.accountType} x={x} y={y} className={s.arcLabel} data-muted={!!active&&active.accountType!==row.accountType} textAnchor="middle" dominantBaseline="central" aria-hidden="true">{pct0(share)}</text>)}
+        </svg>
+        <div className={s.donutCore}>
+          <span className={s.dcLab}>{active?accountTypeName(active.accountType):'Total commission'}</span>
+          <strong key={active?.accountType??'total'} className={s.dcNum} data-long={usd(active?.commission??total).length>11}>{usd(active?.commission??total)}</strong>
+          <span className={s.dcDetail}>{active?`${pct0(total?active.commission/total:0)} of total`:`Last ${data.window.replace('d',' days')}`}</span>
         </div>
       </div>
-
-      {raw && (
-        <div className={s.foot}>
-          <InfoIcon />
-          <div>
-            Raw Spread traders account for {pct0(raw.lots / totalLots)} of your volume but only{' '}
-            {pct0(raw.commission / data.total)} of your commission — those accounts pay a thinner
-            rebate because the client already pays a separate per-lot fee.{' '}
-            {accountTypeName(best.accountType)} accounts are where volume is worth the most to you.
-          </div>
-        </div>
-      )}
-    </>
-  );
+      <div className={s.chartCaption}>{selected?<button onClick={()=>{setSelected(null);setHovered(null);setFocused(null)}}>Show total</button>:<span>{total?'Commission by account type':'No commission in this period'}</span>}</div>
+    </div>
+    <div className={s.breakdown}>
+      <div className={s.legendHead}><span>Account type</span><span>Commission</span></div>
+      <div className={s.distRows}>
+        {segments.map(({row,share})=><button type="button" key={row.accountType} className={s.dr}
+          aria-pressed={selected===row.accountType} aria-label={`Explore ${accountTypeName(row.accountType)} commission`}
+          onClick={()=>setSelected(value=>value===row.accountType?null:row.accountType)}
+          onMouseEnter={()=>setHovered(row.accountType)} onMouseLeave={()=>setHovered(null)}
+          onFocus={()=>setFocused(row.accountType)} onBlur={()=>setFocused(null)}
+          data-active={active?.accountType===row.accountType} style={{'--segment-color':row.colour} as CSSProperties}>
+          <span className={s.legendDot}/>
+          <span className={s.drName}>{accountTypeName(row.accountType)}<small>{lots(row.lots)} lots <span aria-hidden="true">·</span> {usd(row.perLot)} / lot</small></span>
+          <span className={s.amount}>{usd(row.commission)}<small>{pct0(share)}</small></span>
+        </button>)}
+      </div>
+      <p className={s.legendHint}>{total?'Select an account type to see its share.':'Recorded commissions will appear here.'}</p>
+    </div>
+  </div>;
 };

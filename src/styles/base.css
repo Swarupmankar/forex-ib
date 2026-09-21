@@ -92,3 +92,12 @@ td .chip{vertical-align:middle}
  .toolbar .search{flex-basis:100%;min-width:0}
 }
 @media(max-width:380px){.card-head,.card-pad{padding:18px 16px}.wrap{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}.actions .btn{white-space:normal;text-align:center}}
+/* One motion rhythm across the two portals. Content enters; navigation stays put. */
+.motion-region{min-width:0;flex:1}
+.motion-region>.view{animation:none}
+.distribution-note{margin:0;padding:14px 24px;border-top:1px solid var(--line-soft);font-size:11px;line-height:1.6;color:var(--ink-3)}
+.btn{transition:background 160ms,border-color 160ms,color 160ms,transform 160ms}
+.btn:active:not(:disabled){transform:translateY(1px)}
+:is(input,select,textarea){transition:border-color 160ms,box-shadow 160ms}
+@media(hover:hover){a[aria-current='page'] svg{transition:color 180ms,transform 180ms}a[aria-current='page']:hover svg{transform:translateY(-1px)}}
+@media(prefers-reduced-motion:reduce){.btn:active:not(:disabled){transform:none}}

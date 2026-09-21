@@ -1,8 +1,8 @@
-import { Medal } from '../../components/Medal';
+import { Medal, MEDAL_MATERIALS } from '../../components/Medal';
 import { Modal } from '../../components/Modal';
-import { REWARD_ICONS, TIERS, rungState, tierFlag, type Tier, type TierReward } from '../../data/tiers';
+import { REWARD_ICONS, TIERS, parseBenefitsList, rungState, tierFlag, type Tier, type TierReward } from '../../data/tiers';
 import { RATE_ROWS, displayRate } from '../../data/rates';
-import { int, lots, usd } from '../../lib/format';
+import { int, lots, usd, usdWhole } from '../../lib/format';
 import type { TierRank } from '../../types';
 import s from './TierModal.module.css';
 
@@ -37,15 +37,19 @@ export const TierModal = ({
   const currentTier = list.find((t) => t.rank === current) ?? list[0] ?? TIERS[0];
   const flag = tierFlag(tier, current, achievedAt[rank]);
   const isFuture = rank > current;
+  const extraBenefits = parseBenefitsList(tier.bonusBenefitsText);
+  const rewards: TierReward[] = extraBenefits.length
+    ? extraBenefits.map(title => ({icon: 'box', title, detail: ''}))
+    : tier.rewards || [];
 
   return (
     <Modal open onClose={onClose} labelledBy="tier-modal-title">
-      <div className={s.hero}>
+      <div className={s.hero} data-material={MEDAL_MATERIALS[Math.min(5, Math.max(0, rank-1))]}>
         <span className={s.orb} />
         <div className={s.medWrap}>
           <Medal tier={rank} className={s.med} />
         </div>
-        <div className={s.rank}>Tier 0{rank} of 06</div>
+        <div className={s.rank}>Tier {String(rank).padStart(2,'0')} of {String(list.length).padStart(2,'0')} · {MEDAL_MATERIALS[Math.min(5, Math.max(0, rank-1))]}</div>
         <h3 className={s.title} id="tier-modal-title">{tier.name}</h3>
         <div className={s.sub}>
           {tier.rank === 1 ? "Base tier · Entry level" : `${int(tier.minLots)} lots · ${tier.minActiveTraders} active traders`}
@@ -54,6 +58,7 @@ export const TierModal = ({
       </div>
 
       <div className={s.body}>
+        {Boolean(tier.cashBonus) && <div className={s.bonus}><div><span>One-time tier bonus</span><strong>{usdWhole(tier.cashBonus!)}</strong></div><span className={s.bonusNote}>Awarded on first qualification<br/>Payment status in reward history</span></div>}
         {isFuture && (
           <div className={s.ms}>
             <div className={s.msH}>What it takes</div>
@@ -114,15 +119,16 @@ export const TierModal = ({
         </div>
 
         <div className={s.ms}>
-          <div className={s.msH}>What you get</div>
-          {(tier.rewards || []).map((r: TierReward) => {
+          <div className={s.msH}>Tier benefits</div>
+          {rewards.length === 0 && <p className={s.mrewD}>No additional benefits listed for this tier.</p>}
+          {rewards.map((r: TierReward) => {
             const Icon = REWARD_ICONS[r.icon] || REWARD_ICONS['cash'];
             return (
               <div className={s.mrew} key={r.title}>
                 <span className={s.mrewI}><Icon /></span>
                 <div>
                   <div className={s.mrewT}>{r.title}</div>
-                  <div className={s.mrewD}>{r.detail}</div>
+                  {r.detail && <div className={s.mrewD}>{r.detail}</div>}
                 </div>
               </div>
             );

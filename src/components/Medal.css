@@ -1,0 +1,13 @@
+/* Finite, interaction-led motion. The reflection resets instantly after hover. */
+.tier-jewel{isolation:isolate;display:block;flex-shrink:0;aspect-ratio:120/136;object-fit:contain}
+.tier-jewel .jewel-body{transform-origin:60px 65px;transition:transform 360ms cubic-bezier(.2,.8,.2,1)}
+.tier-jewel .jewel-sheen{animation:jewel-intro 1000ms ease-out var(--jewel-delay,0ms) both;pointer-events:none}
+.tier-jewel .jewel-hover-sheen{transform:translateX(-50px);pointer-events:none}
+@media(hover:hover) and (pointer:fine){
+ button:hover .tier-jewel .jewel-body,.tier-jewel:hover .jewel-body{transform:translateY(-2px)}
+ button:hover .tier-jewel .jewel-hover-sheen,.tier-jewel:hover .jewel-hover-sheen{transform:translateX(190px);transition:transform 800ms cubic-bezier(.2,.65,.3,1)}
+}
+button:focus-visible .tier-jewel .jewel-hover-sheen{transform:translateX(190px);transition:transform 800ms cubic-bezier(.2,.65,.3,1)}
+button:active .tier-jewel .jewel-body{transform:scale(.98);transition-duration:120ms}
+@keyframes jewel-intro{from{transform:translateX(-50px)}to{transform:translateX(190px)}}
+@media(prefers-reduced-motion:reduce){.tier-jewel .jewel-body{transition:none;transform:none!important}.tier-jewel .jewel-sheen,.tier-jewel .jewel-hover-sheen{animation:none!important;transition:none!important;display:none}}

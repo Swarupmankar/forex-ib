@@ -350,3 +350,5 @@ export const TableIcon = (p: Props) => (
     <path d="M3 6h18M3 12h18M3 18h18M8 3v18" />
   </Icon>
 );
+
+export const ProfileIcon = (p: Props) => <Icon {...p}><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5v2"/></Icon>;

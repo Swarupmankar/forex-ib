@@ -8,7 +8,7 @@ import { StatusChip } from '../../components/StatusChip';
 import { Who } from '../../components/Who';
 import { Skeleton } from '../../components/Skeleton';
 import {
-  Hero, HeroCta, HeroFacts, HeroFoot, HeroLabel, HeroNumber, HeroSplits, TierDial, TierMini,
+  Hero, HeroCta, HeroFacts, HeroFoot, HeroLabel, HeroNumber, HeroSplits,
 } from '../../components/Hero';
 import {
   BoxFlatIcon, CardPlainIcon, DollarIcon, DownloadIcon, TrendUpIcon,
@@ -22,9 +22,13 @@ import { useIbReferralStats, useIbMyReferrals, useIbMonthlyCommission, useIbRefe
 import { useTierProgress } from '../../lib/useTierProgress';
 import { accountTypeName } from '../../data/rates';
 import {
-  daysLeftInMonth, int, lots, monthYear, pct0, shortDate, signedPct, usd, usdWhole,
+  daysLeftInMonth, int, lots, monthYear, shortDate, signedPct, usd, usdWhole,
 } from '../../lib/format';
-import type { DistributionWindow, Referral } from '../../types';
+import type { DistributionWindow, Referral, TierRank } from '../../types';
+
+import { OverviewTier, RewardTimeline } from './OverviewProgress';
+import { TierModal } from '../rewards/TierModal';
+import s from './OverviewProgress.module.css';
 
 const WINDOW_OPTIONS: { value: DistributionWindow; label: string }[] = [
   { value: '7d', label: 'Last 7 days' },
@@ -41,6 +45,7 @@ const ACTIVITY_ICONS: Record<string, ReactNode> = {
 };
 
 export const OverviewPage = () => {
+  const [openTier, setOpenTier] = useState<TierRank | null>(null);
   const now = useNow();
   const partner = usePartner();
   const overview = useOverview();
@@ -89,9 +94,9 @@ export const OverviewPage = () => {
 
   const mappedRecent = referralRows.slice(0, 5);
 
-  const tier = useTierProgress(partner.tier, totalVolumeLots, totalReferrals, now, tiers);
-  const nextName = tier.next?.shortName ?? tier.current.shortName;
-  const lotsToGo = int(Math.ceil(tier.lotsRemaining));
+  const qualifyingVolume = ibDashboard?.progress?.periodVolumeLots ?? totalVolumeLots;
+  const activeTraders = ibDashboard?.progress?.activeTradersCount ?? overview.activeTraders;
+  const tier = useTierProgress(partner.tier, qualifyingVolume, activeTraders, now, tiers);
 
   const activityRows: FeedRow[] = (ibActivity || []).slice(0, 5).map((a) => ({
     id: a.id,
@@ -134,7 +139,7 @@ export const OverviewPage = () => {
       />
 
       <div className="stack">
-        <Hero>
+        <Hero className={s.summary}>
           <div>
             <HeroLabel>Available to withdraw</HeroLabel>
             <HeroNumber>
@@ -169,12 +174,6 @@ export const OverviewPage = () => {
               <Link className="btn btn-white btn-sm" to="/payouts">Withdraw</Link>
               <Link className="btn btn-ghost btn-sm" to="/commissions">View ledger</Link>
             </HeroCta>
-            <TierMini
-              tier={partner.tier}
-              name={tier.current.name}
-              progress={tier.pctToNext}
-              note={`${lotsToGo} lots to ${nextName} · Tier ${partner.tier < 10 ? `0${partner.tier}` : partner.tier} of ${tiers.length < 10 ? `0${tiers.length}` : tiers.length}`}
-            />
             <HeroSplits
               items={[
                 {
@@ -193,18 +192,13 @@ export const OverviewPage = () => {
             />
           </div>
 
-          <TierDial
-            tier={partner.tier}
-            progress={tier.pctToNext}
-            caption={`${pct0(tier.pctToNext)} to ${nextName}`}
-            label={`Tier ${partner.tier < 10 ? `0${partner.tier}` : partner.tier} of ${tiers.length < 10 ? `0${tiers.length}` : tiers.length}`}
-            name={tier.current.name}
-          />
+          <OverviewTier progress={tier} onSelect={setOpenTier} />
         </Hero>
 
         <Credentials link={link} code={code} loading={isStatsLoading} />
 
-        <div className="two">
+        <div className={s.activityGrid}>
+          <div className={s.activityMain}>
           <div className="card">
             <div className="card-head">
               <div>
@@ -225,6 +219,8 @@ export const OverviewPage = () => {
             <div className="card-head"><div className="card-title">Activity</div></div>
             <Feed rows={activityRows} loading={isActivityLoading} empty="No referral or trading activity yet." />
           </div>
+          </div>
+          <RewardTimeline progress={tier} tiers={tiers} current={partner.tier} onSelect={setOpenTier} />
         </div>
 
         <div className="card">
@@ -241,6 +237,7 @@ export const OverviewPage = () => {
           />
         </div>
       </div>
+      <TierModal rank={openTier} current={partner.tier} volume={qualifyingVolume} traders={activeTraders} achievedAt={{}} tiers={tiers} onClose={()=>setOpenTier(null)} />
     </section>
   );
 };

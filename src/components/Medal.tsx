@@ -1,15 +1,152 @@
+import { useId, type CSSProperties } from 'react';
 import type { TierRank } from '../types';
+import './Medal.css';
 
-/**
- * A tier medallion. The `t{rank}` class is what colours it: it sets
- * --mA/--mB/--mC/--mG on this element, and those inherit into the <use>
- * shadow tree where the gradient stops read them.
- *
- * Sizing comes from the caller — the mockup renders these at eight different
- * sizes and each context sets its own width/height.
- */
-export const Medal = ({ tier, className = '' }: { tier: TierRank; className?: string }) => (
-  <svg className={`medal t${tier} ${className}`.trim()} viewBox="0 0 120 136" aria-hidden>
-    <use href={`#medal${tier}`} />
-  </svg>
-);
+export const MEDAL_MATERIALS = ['Bronze', 'Silver', 'Gold', 'Platinum', 'Ruby', 'Diamond'];
+const MATERIALS = [
+  { light: '#ffdfb5', mid: '#ce8b4f', shade: '#87502c', deep: '#342015' },
+  { light: '#ffffff', mid: '#cbd7e0', shade: '#708799', deep: '#203443' },
+  { light: '#fff5c8', mid: '#e9bd55', shade: '#93651f', deep: '#33250d' },
+  { light: '#ffffff', mid: '#dbe8ec', shade: '#78939e', deep: '#223d49' },
+  { light: '#ffc5d4', mid: '#e83362', shade: '#a00a38', deep: '#3a0920' },
+  { light: '#ffffff', mid: '#d0ebf5', shade: '#6998b3', deep: '#274d66' },
+];
+const SHIELD = 'M60 15 108 32v29c0 24-20 43-48 56C32 104 12 85 12 61V32Z';
+const SHIELD_FACE = 'm60 25 38 14v22c0 20-17 36-38 47-21-11-38-27-38-47V39Z';
+const STAR = 'M60 5 73 39 99 26 86 53 114 65 86 77 99 104 73 91 60 125 47 91 21 104 34 77 6 65 34 53 21 26 47 39Z';
+const RUBY = 'M31 15h58l24 24v46l-24 26H31L7 85V39Z';
+const DIAMOND = 'M30 24h60l23 29-53 69L7 53Z';
+const CROWN = 'm40 32-4-16 15 7 9-13 9 13 15-7-4 16Z';
+// The same source geometry as BrandMark; tier materials never alter its proportions.
+const GATE = 'M4 4 164 125V370L4 491Z M452 4 292 125V370L452 491Z';
+const LEAVES = [
+  'M24 44C12 43 8 33 12 26c10 3 15 10 12 18Z',
+  'M20 62C7 58 4 47 8 40c11 5 15 13 12 22Z',
+  'M23 81C8 79 4 69 6 61c13 3 19 12 17 20Z',
+  'M34 98C19 101 10 92 9 84c14-2 23 5 25 14Z',
+  'M50 110C36 118 23 111 20 104c13-6 25-3 30 6Z',
+];
+
+/** Six distinct forms with a shared light source, relief depth and brand mark. */
+export const Medal = ({ tier, className = '' }: { tier: TierRank; className?: string }) => {
+  const id = `medal-${useId().replace(/:/g, '')}`;
+  const index = Math.max(0, Math.min(5, tier - 1));
+  const { light, mid, shade, deep } = MATERIALS[index];
+  const paint = (name: string) => `url(#${id}-${name})`;
+  const goldLeaves = (detailed = false) => [false, true].map(mirror => (
+    <g key={String(mirror)} transform={mirror ? 'translate(120 0) scale(-1 1)' : undefined}>
+      {LEAVES.map((d, i) => <g key={i}>
+        <path d={d} fill={detailed ? paint('metal') : undefined} stroke={detailed ? light : undefined} strokeWidth=".45" />
+        {detailed && <path d={[
+          'm13 31 10 11', 'm9 45 10 15', 'm9 66 13 13', 'm14 88 18 9', 'm26 106 22 4',
+        ][i]} fill="none" stroke={deep} opacity=".22" strokeWidth=".65" />}
+      </g>)}
+    </g>
+  ));
+  const outline = index === 0 ? <circle cx="60" cy="64" r="47" />
+    : index === 1 ? <path d={SHIELD} />
+    : index === 2 ? <><circle cx="60" cy="67" r="37" /><path d={CROWN} />{goldLeaves()}</>
+    : <path d={index === 3 ? STAR : index === 4 ? RUBY : DIAMOND} />;
+  const mark = (x: number, y: number, scale: number, engraved = false) => (
+    <g className="jewel-mark" transform={`translate(${x} ${y}) scale(${scale})`}>
+      <path d={GATE} transform="translate(1 24)" fill={deep} />
+      <path d={GATE} fill={engraved ? paint('engraving') : paint('mark')} stroke={engraved ? light : mid} strokeWidth="3" strokeLinejoin="round" />
+      <path d="M4 4 164 125 153 130 14 25V469L4 491ZM452 4 292 125 303 130 442 25V469L452 491Z" fill={light} opacity={engraved ? '.65' : '.8'} />
+      <path d="M164 125V370L4 491M292 125V370L452 491" fill="none" stroke={engraved ? '#fff' : deep} strokeWidth="7" opacity=".6" />
+    </g>
+  );
+
+  return <svg className={`medal tier-jewel t${tier} ${className}`.trim()} viewBox="0 0 120 136" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false" data-material={MEDAL_MATERIALS[index]} style={{ '--jewel-delay': `${index * 65}ms` } as CSSProperties}>
+    <defs>
+      <linearGradient id={`${id}-metal`} x1=".12" y1="0" x2=".82" y2="1">
+        <stop stopColor={light} /><stop offset=".2" stopColor={mid} /><stop offset=".45" stopColor={shade} /><stop offset=".58" stopColor={light} /><stop offset=".77" stopColor={mid} /><stop offset="1" stopColor={shade} />
+      </linearGradient>
+      <linearGradient id={`${id}-face`} x1=".12" y1="0" x2=".8" y2="1">
+        <stop stopColor={light} /><stop offset=".24" stopColor={mid} /><stop offset=".65" stopColor={shade} /><stop offset="1" stopColor={mid} />
+      </linearGradient>
+      <linearGradient id={`${id}-dark`} x1=".1" y1="0" x2=".8" y2="1"><stop stopColor={shade} /><stop offset=".6" stopColor={deep} /><stop offset="1" stopColor={shade} /></linearGradient>
+      <linearGradient id={`${id}-mark`} x1="0" y1="0" x2=".55" y2="1"><stop stopColor={light} /><stop offset=".42" stopColor={mid} /><stop offset=".49" stopColor={shade} /><stop offset=".55" stopColor={mid} /><stop offset="1" stopColor={light} /></linearGradient>
+      <linearGradient id={`${id}-engraving`} x1="0" y1="0" x2="1" y2="1"><stop stopColor={deep} /><stop offset="1" stopColor={shade} /></linearGradient>
+      <linearGradient id={`${id}-gem`} x1="0" y1="0" x2=".85" y2="1"><stop stopColor={light} /><stop offset=".35" stopColor={mid} /><stop offset="1" stopColor={deep} /></linearGradient>
+      <linearGradient id={`${id}-reflection`} x1="0" y1="0" x2="1" y2="1"><stop stopColor="#fff" stopOpacity=".45" /><stop offset=".46" stopColor="#fff" stopOpacity="0" /><stop offset="1" stopColor="#fff" stopOpacity=".08" /></linearGradient>
+      <linearGradient id={`${id}-sheen`}><stop stopColor="#fff" stopOpacity="0" /><stop offset=".5" stopColor="#fff" stopOpacity=".34" /><stop offset="1" stopColor="#fff" stopOpacity="0" /></linearGradient>
+      <radialGradient id={`${id}-enamel`} cx=".35" cy=".2" r=".9"><stop stopColor={shade} /><stop offset=".52" stopColor={deep} /><stop offset="1" stopColor="#10191d" /></radialGradient>
+      <linearGradient id={`${id}-cut`} x1="0" y1="0" x2="1" y2=".85"><stop stopColor={light} /><stop offset=".32" stopColor={mid} /><stop offset=".33" stopColor={shade} /><stop offset=".68" stopColor={deep} /><stop offset="1" stopColor={mid} /></linearGradient>
+      <radialGradient id={`${id}-shadow`}><stop stopColor="#000" stopOpacity=".18" /><stop offset="1" stopColor="#000" stopOpacity="0" /></radialGradient>
+      <clipPath id={`${id}-clip`}>{outline}</clipPath>
+    </defs>
+    <ellipse cx="60" cy="129" rx="35" ry="4" fill={paint('shadow')} />
+    <g className="jewel-body">
+      {index === 0 && <>
+        <circle cx="60" cy="69" r="47" fill={paint('cut')} />
+        <circle cx="60" cy="64" r="47" fill={paint('metal')} stroke={light} strokeWidth=".8" />
+        <circle cx="60" cy="64" r="43.5" fill="none" stroke={deep} strokeWidth=".75" />
+        <g className="jewel-fine-detail">{Array.from({ length: 40 }, (_, i) => <path key={i} d="M60 19v2.8" stroke={i % 2 ? shade : light} strokeWidth=".8" transform={`rotate(${i * 9} 60 64)`} />)}</g>
+        <circle cx="60" cy="64" r="39.5" fill={paint('enamel')} stroke={light} strokeWidth=".8" />
+        <circle cx="60" cy="64" r="36.5" fill="none" stroke={mid} opacity=".5" strokeWidth=".65" />
+        <path d="M18 47a45 45 0 0 1 71-19" fill="none" stroke={light} strokeWidth="1.8" strokeLinecap="round" />
+        {mark(36.5, 36, .104)}
+        <path d="m47 96 13 3 13-3" fill="none" stroke={mid} strokeWidth="1" />
+      </>}
+      {index === 1 && <>
+        <path d={SHIELD} transform="translate(0 5)" fill={paint('cut')} /><path d={SHIELD} fill={paint('metal')} stroke={light} strokeWidth=".8" />
+        <path d={SHIELD_FACE} fill={paint('enamel')} stroke={deep} strokeWidth="1" />
+        <path d="m60 26-36 14v21c0 19 16 34 36 45Z" fill={paint('reflection')} />
+        <path d="m33 86 27 17 27-17" fill="none" stroke={paint('metal')} strokeWidth="3" strokeLinejoin="round" />
+        <path d="m17 34 43-15 43 15M17 34v27c0 22 19 40 43 51" stroke={light} opacity=".9" strokeWidth="1" fill="none" />
+        {mark(36.5, 34, .104)}
+      </>}
+      {index === 2 && <>
+        <path d="M60 115C24 105 10 80 20 40M60 115c36-10 50-35 40-75" fill="none" stroke={shade} strokeWidth="2.5" />
+        {goldLeaves(true)}
+        <circle cx="60" cy="71" r="36" fill={paint('cut')} /><circle cx="60" cy="67" r="36" fill={paint('metal')} stroke={light} strokeWidth=".8" />
+        <circle cx="60" cy="67" r="29.5" fill={paint('enamel')} stroke={light} strokeWidth=".6" />
+        <circle cx="60" cy="67" r="26.5" fill="none" stroke={mid} strokeWidth=".6" opacity=".45" />
+        <path d={CROWN} fill={paint('metal')} stroke={light} strokeWidth=".7" strokeLinejoin="round" /><path d="M40 32h40" stroke={deep} strokeWidth="1.8" />
+        <path d="m38 21 13 8 9-13 9 13 13-8" fill="none" stroke={light} strokeWidth=".8" />
+        {mark(41, 42, .084)}
+      </>}
+      {index === 3 && <>
+        <path d={STAR} transform="translate(0 4)" fill={paint('cut')} /><path d={STAR} fill={paint('metal')} stroke={light} strokeWidth=".7" />
+        <path d="M60 5v60l13-26ZM99 26 60 65l26-12ZM114 65H60l26 12ZM99 104 60 65l13 26ZM60 125V65L47 91ZM21 104 60 65 34 77ZM6 65h54L34 53ZM21 26 60 65 47 39Z" fill={light} opacity=".85" />
+        <path d="M60 5v60l-13-26ZM114 65H60l26-12ZM60 125V65l13 26ZM6 65h54L34 77Z" fill={deep} opacity=".5" />
+        <circle cx="60" cy="65" r="34" fill={paint('metal')} stroke={light} strokeWidth=".8" />
+        <circle cx="60" cy="65" r="28.5" fill={paint('enamel')} stroke={deep} strokeWidth=".9" />
+        <circle cx="60" cy="65" r="25.5" fill="none" stroke={light} opacity=".4" strokeWidth=".6" />
+        {mark(40.5, 42, .086)}
+      </>}
+      {index === 4 && <>
+        <path d={RUBY} transform="translate(0 4)" fill={paint('cut')} /><path d={RUBY} fill={paint('metal')} stroke={light} strokeWidth=".8" />
+        <path d="M33 21h54l20 21v41l-20 22H33L13 83V42Z" fill={paint('dark')} />
+        <path d="M33 21h54L76 37H44Z" fill={paint('face')} />
+        <path d="M33 21 13 42 34 50 44 37Z" fill={mid} /><path d="m87 21 20 21-21 8-10-13Z" fill={light} opacity=".75" />
+        <path d="M13 42v41l21-9V50Z" fill={paint('face')} /><path d="M107 42v41l-21-9V50Z" fill={paint('cut')} />
+        <path d="m13 83 20 22 11-16-10-15Z" fill={shade} /><path d="m107 83-20 22-11-16 10-15Z" fill={mid} />
+        <path d="M33 105h54L76 89H44Z" fill={paint('face')} />
+        <path d="M44 37h32l10 13v24L76 89H44L34 74V50Z" fill={paint('enamel')} stroke={light} strokeWidth=".7" />
+        <path d="M45 40h30l8 11v22L75 86H45L37 73V51Z" fill={paint('gem')} />
+        <path d="M33 21 44 37m43-16L76 37M13 42l21 8m73-8-21 8M13 83l21-9m73 9-21-9M33 105l11-16m43 16L76 89" fill="none" stroke={light} opacity=".45" strokeWidth=".8" />
+        {mark(43, 43, .075)}
+        <path d="m29 18 7 8m55-8-7 8M29 108l7-8m55 8-7-8" stroke="#f2dde5" strokeWidth="2.2" strokeLinecap="round" />
+        <path d="M34 17h52" stroke="#fff2f7" strokeWidth="1.2" />
+      </>}
+      {index === 5 && <>
+        <path d={DIAMOND} transform="translate(0 4)" fill={paint('cut')} /><path d={DIAMOND} fill={paint('metal')} stroke={light} strokeWidth=".8" strokeLinejoin="round" />
+        <path d="M30 24 60 24 44 43 19 43Z" fill={light} /><path d="M60 24 90 24 101 43H76Z" fill={mid} />
+        <path d="M60 24 44 43h32Z" fill={paint('cut')} />
+        <path d="M19 43 7 53h28l9-10Z" fill={shade} /><path d="m101 43 12 10H85l-9-10Z" fill={light} />
+        <path d="m44 43-9 10 25 9 25-9-9-10Z" fill={light} />
+        <path d="M7 53h28l25 69Z" fill={paint('cut')} /><path d="M113 53H85l-25 69Z" fill={paint('face')} />
+        <path d="M35 53 60 62 85 53 60 122Z" fill={paint('face')} />
+        <path d="M35 53 60 122 49 80Z" fill={light} opacity=".75" /><path d="M85 53 60 122 71 80Z" fill={shade} opacity=".6" />
+        <path d="M30 24 19 43 7 53m23-29 14 19-9 10L60 122 85 53l-9-10L90 24M7 53h28l25 9 25-9h28M19 43h82M60 24 44 43m16-19 16 19" fill="none" stroke={light} strokeWidth=".8" opacity=".85" />
+        <path d="M30 25h59" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" />
+        {mark(40.5, 44, .086, true)}
+      </>}
+      <g clipPath={`url(#${id}-clip)`}>
+        <path className="jewel-sheen" d="M-65-20H-30L45 150H10Z" fill={paint('sheen')} />
+        <path className="jewel-hover-sheen" d="M-65-20H-30L45 150H10Z" fill={paint('sheen')} />
+      </g>
+    </g>
+  </svg>;
+};
