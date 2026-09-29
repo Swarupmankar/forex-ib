@@ -42,7 +42,7 @@ export const TopBar = ({ title }: { title: string }) => {
 
   // Lifetime commission minus what has been withdrawn (paid or in review)
   const liveBalance = Math.round(
-    (monthlyReport?.stats.balance ?? ibStats?.totalCommission ?? 0) * 100
+    (monthlyReport?.stats?.balance ?? ibStats?.totalCommission ?? 0) * 100
   );
 
   const [menuOpen, setMenuOpen] = useState(false);

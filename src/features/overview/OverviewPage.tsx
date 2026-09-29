@@ -62,8 +62,8 @@ export const OverviewPage = () => {
 
   const isHeroLoading = isStatsLoading || isMonthlyLoading || isDashboardLoading;
 
-  const balance = ibMonthly?.stats.availableBalance ?? ibStats?.totalCommission ?? 0;
-  const lifetime = ibMonthly?.stats.totalEarnings ?? ibStats?.totalCommission ?? 0;
+  const balance = ibMonthly?.stats?.availableBalance ?? ibStats?.totalCommission ?? 0;
+  const lifetime = ibMonthly?.stats?.totalEarnings ?? ibStats?.totalCommission ?? 0;
   const totalReferrals = ibStats?.totalReferrals ?? ibDashboard?.progress?.totalReferredClients ?? 0;
   const totalVolumeLots = ibStats?.totalLots ?? ibDashboard?.progress?.periodVolumeLots ?? 0;
   const code = ibStats?.referralCode || ibDashboard?.referralCode || partner.code || '';
@@ -159,7 +159,7 @@ export const OverviewPage = () => {
                 {
                   value: isHeroLoading
                     ? <Skeleton dark width="65px" height="16px" />
-                    : usdWhole(ibMonthly?.stats.totalWithdrawn ? Math.round(ibMonthly.stats.totalWithdrawn * 100) : 0),
+                    : usdWhole(Math.round((ibMonthly?.stats?.totalWithdrawn ?? 0) * 100)),
                   label: 'paid out',
                 },
                 {

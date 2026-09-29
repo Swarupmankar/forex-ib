@@ -52,7 +52,7 @@ export interface MonthlyCommissionRow {
 
 export interface MonthlyCommissionReport {
   monthlyData: MonthlyCommissionRow[];
-  stats: {
+  stats?: {
     /** Lifetime commission earned minus paid and pending withdrawals */
     balance?: number;
     availableBalance: number;
