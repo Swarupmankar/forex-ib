@@ -1,38 +1,85 @@
-import type { AccountType, AccountTypeId, Money, RateRow } from '../types';
+/**
+ * Account types and rates come from the backend: account types are the
+ * broker's own (Account Types Management in the admin panel) and rates are the
+ * ones published per tier in IB Management. Nothing here is hard-coded.
+ */
 
-export const ACCOUNT_TYPES: AccountType[] = [
-  { id: 'standard', name: 'Standard', model: 'spread-based' },
-  { id: 'pro', name: 'Pro', model: 'spread-based' },
-  { id: 'raw', name: 'Raw Spread', model: 'commission a/c' },
-  { id: 'zero', name: 'Zero', model: 'commission a/c' },
-];
+/** Referrals and ledger rows carry the account type's name. */
+export const accountTypeName = (name: string | null | undefined) => name || '—';
 
-export const accountTypeName = (id: AccountTypeId | null) =>
-  id ? (ACCOUNT_TYPES.find((a) => a.id === id)?.name ?? '—') : '—';
+/** Chart colours cycled across however many account types the broker has. */
+export const ACCOUNT_COLOURS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)'];
 
 /**
- * BASE rates, pre-uplift, in minor units per standard lot.
- *
- * The mockup prints Senior Partner rates (×1.25); these are those figures
- * divided back down, which is why they are round numbers — $9.00 shown is
- * 720¢ base. Never store the uplifted value: the rate card's tier preview
- * multiplies from here, and storing post-uplift would compound.
+ * Instrument groups the rate card shows, one row each: the same groups as the
+ * admin's Symbol Commission Rate Matrix (Majors, Minors, Metals, Gas & Oil,
+ * Indices, Crypto). `symbols` orders which symbol's rate represents the row.
  */
-export const RATE_ROWS: RateRow[] = [
-  { id: 'fx-major',  group: 'Major FX',          examples: 'EURUSD, GBPUSD, USDJPY',      base: { standard: 720,  pro: 600,  raw: 448, zero: 504 } },
-  { id: 'fx-minor',  group: 'Minors & crosses',  examples: 'EURGBP, AUDNZD, CADJPY',      base: { standard: 648,  pro: 540,  raw: 404, zero: 452 } },
-  { id: 'fx-exotic', group: 'Exotics',           examples: 'USDTRY, USDZAR, USDMXN',      base: { standard: 1000, pro: 832,  raw: 624, zero: 700 } },
-  { id: 'gold',      group: 'Gold',              examples: 'XAUUSD',                      base: { standard: 1100, pro: 900,  raw: 672, zero: 752 } },
-  { id: 'metals',    group: 'Silver & metals',   examples: 'XAGUSD, platinum, copper',    base: { standard: 900,  pro: 752,  raw: 560, zero: 628 } },
-  { id: 'indices',   group: 'Indices',           examples: 'US30, NAS100, GER40',         base: { standard: 552,  pro: 448,  raw: 336, zero: 376 } },
-  { id: 'energies',  group: 'Energies',          examples: 'UKOIL, USOIL, NGAS',          base: { standard: 700,  pro: 576,  raw: 432, zero: 484 } },
-  { id: 'equities',  group: 'Share CFDs',        examples: 'Single stocks',               base: { standard: 352,  pro: 288,  raw: 216, zero: 240 } },
+export const RATE_ROWS: { id: string; group: string; examples: string; symbols: string[] }[] = [
+  { id: 'MAJORS',   group: 'Forex Majors',           examples: 'EURUSD, GBPUSD, USDJPY', symbols: ['EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'USDCAD', 'AUDUSD', 'NZDUSD'] },
+  { id: 'MINORS',   group: 'Forex Minors & Crosses', examples: 'EURGBP, EURJPY, AUDNZD', symbols: ['EURGBP', 'EURJPY', 'AUDNZD'] },
+  { id: 'METALS',   group: 'Precious Metals',        examples: 'XAUUSD, XAGUSD, XPTUSD', symbols: ['XAUUSD', 'XAGUSD', 'XPTUSD'] },
+  { id: 'ENERGIES', group: 'Gas & Oil',              examples: 'WTIUSD, XNGUSD',         symbols: ['WTIUSD', 'XNGUSD'] },
+  { id: 'INDICES',  group: 'Equity Indices',         examples: 'US30, US500, NAS100',    symbols: ['US30', 'US500', 'NAS100'] },
+  { id: 'CRYPTO',   group: 'Crypto',                 examples: 'BTCUSD, ETHUSD',         symbols: ['BTCUSD', 'ETHUSD'] },
 ];
 
-/** Displayed rate = base × tier multiplier, rounded to the cent. */
-export const displayRate = (base: Money, multiplier: number): Money => Math.round(base * multiplier);
+const norm = (sym: string) => sym.toUpperCase().replace(/[\s/._-]/g, '');
 
-/** The rate card marks the best-paying account type on each row. */
-export const bestAccountType = (row: RateRow): AccountTypeId =>
-  (Object.entries(row.base) as [AccountTypeId, Money][])
-    .reduce((best, cur) => (cur[1] > best[1] ? cur : best))[0];
+const FX_MAJORS = ['EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'USDCAD', 'AUDUSD', 'NZDUSD'];
+
+/** Same grouping as the admin rate matrix and the backend. */
+const groupOf = (sym: string): string => {
+  const s = norm(sym);
+  if (FX_MAJORS.includes(s)) return 'MAJORS';
+  if (/^(BTC|ETH|LTC|XRP|SOL|DOGE|ADA|BNB)/.test(s)) return 'CRYPTO';
+  if (/^(XAU|XAG|XPT|XPD)/.test(s)) return 'METALS';
+  if (/(OIL|WTI|BRENT|XNG|NGAS)/.test(s)) return 'ENERGIES';
+  if (/^(US\d|US500|NAS|SPX|GER|UK\d|JP\d|HK\d|AUS\d|FRA|EU\d)/.test(s)) return 'INDICES';
+  return 'MINORS';
+};
+
+/** Symbols with a published rate in a group, e.g. "EURUSD, GBPUSD, USDJPY". */
+export const groupExamples = (
+  rates: Record<string, Record<string, number>> | undefined,
+  rowId: string,
+): string | null => {
+  const syms = Object.keys(rates ?? {}).filter((sym) => groupOf(sym) === rowId).sort();
+  if (syms.length === 0) return null;
+  return syms.slice(0, 3).join(', ') + (syms.length > 3 ? ` +${syms.length - 3}` : '');
+};
+
+/**
+ * The published rate (USD per lot) for an instrument group and account type:
+ * the group's first listed symbol that has a rate, else any other symbol in
+ * the group. null when the admin has set none.
+ */
+export const groupRate = (
+  rates: Record<string, Record<string, number>> | undefined,
+  rowId: string,
+  accountTypeId: string,
+): number | null => {
+  if (!rates) return null;
+  const byNorm = new Map(Object.entries(rates).map(([sym, v]) => [norm(sym), v] as const));
+  const row = RATE_ROWS.find((r) => r.id === rowId);
+  for (const sym of row?.symbols ?? []) {
+    const v = byNorm.get(sym)?.[accountTypeId];
+    if (typeof v === 'number') return v;
+  }
+  for (const [sym, v] of byNorm) {
+    if (groupOf(sym) === rowId && typeof v[accountTypeId] === 'number') return v[accountTypeId];
+  }
+  return null;
+};
+
+/** Best rate for a group across account types (USD per lot), or null. */
+export const bestGroupRate = (
+  rates: Record<string, Record<string, number>> | undefined,
+  rowId: string,
+  accountTypeIds: string[],
+): number | null => {
+  const values = accountTypeIds
+    .map((id) => groupRate(rates, rowId, id))
+    .filter((v): v is number => v !== null);
+  return values.length ? Math.max(...values) : null;
+};

@@ -40,8 +40,9 @@ export const TopBar = ({ title }: { title: string }) => {
   const { data: ibNotifications } = useIbReferralNotifications();
   const isBalanceLoading = isMonthlyLoading && isStatsLoading;
 
+  // Lifetime commission minus what has been withdrawn (paid or in review)
   const liveBalance = Math.round(
-    (monthlyReport?.stats.availableBalance ?? ibStats?.totalCommission ?? 0) * 100
+    (monthlyReport?.stats.balance ?? ibStats?.totalCommission ?? 0) * 100
   );
 
   const [menuOpen, setMenuOpen] = useState(false);

@@ -9,9 +9,10 @@ import { DownloadIcon, SearchIcon, UserPlusIcon } from '../../components/icons';
 import { InviteModal } from './InviteModal';
 import { Credentials } from '../overview/Credentials';
 import { referralLink } from '../../lib/referral';
-import { useNow, usePartner } from '../../api/hooks';
+import { useAccountTypes, useNow, usePartner } from '../../api/hooks';
 import { useIbMyReferrals, useIbReferralStats } from '../../api/ib.hooks';
 import { accountTypeName } from '../../data/rates';
+import { istMonth } from '../../lib/istMonth';
 import { downloadCsv, stampedName } from '../../lib/download';
 import { lots, relativeDay, shortDate, usd, usdWhole } from '../../lib/format';
 import type { AccountTypeId, Referral, ReferralStatus } from '../../types';
@@ -24,13 +25,6 @@ const STATUS_OPTIONS: { value: ReferralStatus | 'all'; label: string }[] = [
   { value: 'churned', label: 'Churned' },
 ];
 
-const ACCOUNT_OPTIONS: { value: AccountTypeId | 'all'; label: string }[] = [
-  { value: 'all', label: 'All accounts' },
-  { value: 'standard', label: 'Standard' },
-  { value: 'pro', label: 'Pro' },
-  { value: 'raw', label: 'Raw Spread' },
-  { value: 'zero', label: 'Zero' },
-];
 
 export const ReferralsPage = () => {
   const now = useNow();
@@ -42,6 +36,12 @@ export const ReferralsPage = () => {
   const [inviting, setInviting] = useState(false);
 
   const { data: myReferrals, isLoading: isReferralsLoading } = useIbMyReferrals();
+  const accountTypes = useAccountTypes();
+  // Account types from Account Types Management
+  const accountOptions: { value: AccountTypeId | 'all'; label: string }[] = [
+    { value: 'all', label: 'All accounts' },
+    ...accountTypes.map((a) => ({ value: a.name, label: a.name })),
+  ];
   const { data: ibStats, isLoading: isStatsLoading } = useIbReferralStats();
 
   const code = ibStats?.referralCode || partner.code;
@@ -54,6 +54,8 @@ export const ReferralsPage = () => {
     }
 
     const needle = q.trim().toLowerCase();
+    // Same IST month the backend buckets commission into
+    const currentMonth = istMonth(now);
 
     return myReferrals
       .map((r, idx) => {
@@ -74,18 +76,19 @@ export const ReferralsPage = () => {
           accountId,
           email: r.email,
           country: 'Global',
-          accountType: 'pro' as AccountTypeId,
+          accountType: r.accountTypes?.join(', ') || null,
           status: itemStatus,
           joinedAt: r.registeredAt,
           deposits: 0,
           volumeLots: r.totalLots,
           lifetime: Math.round(r.totalCommission * 100),
-          thisMonth: Math.round(r.totalCommission * 100),
+          thisMonth: Math.round((r.monthlyCommission?.[currentMonth] ?? 0) * 100),
           lastTradeAt: r.registeredAt,
         };
       })
       .filter((r) => {
         if (status !== 'all' && r.status !== status) return false;
+        if (accountType !== 'all' && !(r.accountType ?? '').split(', ').includes(accountType)) return false;
         if (needle) {
           return (
             r.name.toLowerCase().includes(needle) ||
@@ -95,7 +98,7 @@ export const ReferralsPage = () => {
         }
         return true;
       });
-  }, [myReferrals, q, status]);
+  }, [myReferrals, q, status, accountType, now]);
 
   const filtered = q.trim() !== '' || status !== 'all' || accountType !== 'all';
 
@@ -126,7 +129,6 @@ export const ReferralsPage = () => {
       key: 'trader', header: 'Trader', mobile: 'primary',
       render: (r) => <Who initials={r.initials} name={r.name} id={r.accountId} />,
     },
-    { key: 'account', header: 'Account type', mobile: 'secondary', render: (r) => accountTypeName(r.accountType) },
     { key: 'joined', header: 'Joined', render: (r) => <span className="num">{shortDate(r.joinedAt)}</span> },
     { key: 'deposits', header: 'Deposits', align: 'right', render: (r) => usdWhole(r.deposits) },
     { key: 'volume', header: 'Volume', align: 'right', render: (r) => lots(r.volumeLots) },
@@ -170,7 +172,7 @@ export const ReferralsPage = () => {
             />
           </label>
           <Select ariaLabel="Filter by status" value={status} options={STATUS_OPTIONS} onChange={setStatus} />
-          <Select ariaLabel="Filter by account type" value={accountType} options={ACCOUNT_OPTIONS} onChange={setAccountType} />
+          <Select ariaLabel="Filter by account type" value={accountType} options={accountOptions} onChange={setAccountType} />
         </div>
 
         <DataList

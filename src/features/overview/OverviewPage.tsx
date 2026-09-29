@@ -79,7 +79,7 @@ export const OverviewPage = () => {
           initials,
           email: r.email,
           accountId: r.email,
-          accountType: 'standard',
+          accountType: r.accountTypes?.join(', ') || null,
           country: 'Global',
           status: r.status === 'active' ? 'active' : 'dormant',
           joinedAt: r.registeredAt,

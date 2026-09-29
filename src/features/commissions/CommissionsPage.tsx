@@ -8,14 +8,11 @@ import { Distribution } from './Distribution';
 import { buildDistribution } from './distributionData';
 import { RateCard } from './RateCard';
 import { useToast } from '../../components/Toast';
-import { useLedgerTraders, useNow, usePartner } from '../../api/hooks';
-import {
-  useIbMonthlyCommission,
-  useIbCommissionTiers,
-  useIbCommissionLedger,
-} from '../../api/ib.hooks';
+import { useAccountTypes, useNow, usePartner } from '../../api/hooks';
+import { useIbCommissionLedger } from '../../api/ib.hooks';
 import { accountTypeName } from '../../data/rates';
 import { downloadCsv, stampedName } from '../../lib/download';
+import { istMonthStart } from '../../lib/istMonth';
 import { lots2, stamp, usd, usdSigned } from '../../lib/format';
 import type {
   DistributionWindow,
@@ -52,6 +49,14 @@ const columns: Col<LedgerEntry>[] = [
   },
 ];
 
+/** Start (inclusive) and end (exclusive) of a ledger window, in ms. Months are IST. */
+const windowRange = (w: LedgerWindow, nowMs: number): [number, number] => {
+  const thisMonth = istMonthStart(nowMs);
+  if (w === 'this-month') return [thisMonth, Infinity];
+  if (w === 'last-month') return [istMonthStart(nowMs, 1), thisMonth];
+  return [nowMs - 90 * 86400000, Infinity];
+};
+
 export const CommissionsPage = () => {
   const now = useNow();
   const partner = usePartner();
@@ -60,41 +65,53 @@ export const CommissionsPage = () => {
   const [ledgerWindow, setLedgerWindow] = useState<LedgerWindow>('this-month');
   const [traderId, setTraderId] = useState<string>('all');
 
-  const traders = useLedgerTraders();
+  const accountTypes = useAccountTypes();
 
   // Live Backend Queries
-  const { data: monthlyReport, isLoading: isMonthlyLoading } = useIbMonthlyCommission();
-  const { data: ledgerData, isLoading: isDistributionLoading, isError: isDistributionError } = useIbCommissionLedger(1, 100);
-  useIbCommissionTiers();
+  const { data: ledgerData, isLoading: isLedgerLoading, isError: isDistributionError } = useIbCommissionLedger(1, 100);
 
   const distribution = useMemo(
-    () => buildDistribution(ledgerData?.ledger ?? [], window, new Date(now).getTime()),
-    [ledgerData, window, now],
+    () => buildDistribution(ledgerData?.ledger ?? [], window, new Date(now).getTime(), accountTypes),
+    [ledgerData, window, now, accountTypes],
   );
 
-  const entries: LedgerEntry[] = useMemo(() => {
-    if (!monthlyReport || monthlyReport.monthlyData.length === 0) {
-      return [];
+  const allEntries: LedgerEntry[] = useMemo(
+    () =>
+      // Closed trades that earned nothing (no rate / not eligible) are not accruals
+      (ledgerData?.ledger ?? []).filter((e) => e.state !== 'SKIPPED').map((e) => ({
+        id: `ledger-${e.id}`,
+        at: e.createdAt,
+        traderId: e.clientId != null ? String(e.clientId) : null,
+        traderName: e.clientName ?? null,
+        accountType: e.accountType || null,
+        symbol: e.symbol,
+        lots: e.closedLots,
+        rate: Math.round(e.rate * 100),
+        amount: Math.round(e.amount * 100),
+        state: e.state === 'PAID' ? 'paid' : 'accrued',
+      })),
+    [ledgerData],
+  );
+
+  const entries = useMemo(() => {
+    const [from, to] = windowRange(ledgerWindow, new Date(now).getTime());
+    return allEntries.filter((e) => {
+      const at = new Date(e.at).getTime();
+      if (at < from || at >= to) return false;
+      return traderId === 'all' || e.traderId === traderId;
+    });
+  }, [allEntries, ledgerWindow, traderId, now]);
+
+  const traderOptions = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const e of allEntries) {
+      if (e.traderId && !seen.has(e.traderId)) seen.set(e.traderId, e.traderName ?? `Client ${e.traderId}`);
     }
-
-    return monthlyReport.monthlyData.map((m, idx) => ({
-      id: `live-comm-${idx}-${m.month}`,
-      at: `${m.month}-01T00:00:00.000Z`,
-      traderId: `trader-${idx}`,
-      traderName: `Referral Traders (${m.referrals})`,
-      accountType: 'pro',
-      symbol: 'EURUSD',
-      lots: m.totalLots,
-      rate: Math.round((m.commission / (m.totalLots || 1)) * 100),
-      amount: Math.round(m.commission * 100),
-      state: m.status === 'PAID' ? 'paid' : 'accrued',
-    }));
-  }, [monthlyReport]);
-
-  const traderOptions = [
-    { value: 'all', label: 'All traders' },
-    ...traders.map((t) => ({ value: t.id, label: t.name })),
-  ];
+    return [
+      { value: 'all', label: 'All traders' },
+      ...Array.from(seen, ([value, label]) => ({ value, label })),
+    ];
+  }, [allEntries]);
 
   const downloadStatement = () => {
     if (entries.length === 0) {
@@ -140,7 +157,7 @@ export const CommissionsPage = () => {
               <div className="card-title">Where your commission comes from</div>
               <div className="card-sub">
                 {WINDOW_OPTIONS.find((w) => w.value === window)?.label} ·{' '}
-                {isDistributionLoading
+                {isLedgerLoading
                   ? <Skeleton width="80px" height="16px" />
                   : usd(distribution.total)}{' '}
                 in recorded commission
@@ -153,7 +170,7 @@ export const CommissionsPage = () => {
               onChange={setWindow}
             />
           </div>
-          {isDistributionLoading ? <div className="card-pad" role="status" aria-label="Loading commission breakdown"><Skeleton width="100%" height="260px" /></div>
+          {isLedgerLoading ? <div className="card-pad" role="status" aria-label="Loading commission breakdown"><Skeleton width="100%" height="260px" /></div>
             : isDistributionError ? <p className="card-pad sub" role="status">Commission breakdown could not be loaded. Please try again shortly.</p>
             : <Distribution data={distribution} />}
           <p className="distribution-note">Based on positive commission in the latest {ledgerData?.ledger.length ?? 0} loaded ledger entries. {Number(ledgerData?.pagination?.totalPages) > 1 ? 'More entries exist; this is a partial breakdown.' : 'Reversals are excluded.'}</p>
@@ -183,7 +200,7 @@ export const CommissionsPage = () => {
             columns={columns}
             rows={entries}
             rowKey={(e) => e.id}
-            loading={isMonthlyLoading}
+            loading={isLedgerLoading}
             empty="No accruals in this period."
           />
         </div>

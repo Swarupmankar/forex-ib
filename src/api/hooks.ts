@@ -22,6 +22,7 @@ import type {
   OverviewSeriesPoint,
   Partner,
   PayoutsData,
+  AccountType,
   Referral,
   ReferralQuery,
   RewardHistoryItem,
@@ -128,6 +129,12 @@ export const useOverview = (): Overview => {
     series: [],
     activity: [],
   };
+};
+
+/** The broker's account types, as configured in Account Types Management. */
+export const useAccountTypes = (): AccountType[] => {
+  const { data: ibDashboard } = useIbDashboard();
+  return useMemo(() => ibDashboard?.accountTypes ?? [], [ibDashboard]);
 };
 
 export const useMergedTiers = (): Tier[] => {
@@ -327,7 +334,7 @@ export const useReferrals = (query: ReferralQuery): Referral[] => {
             .slice(0, 2) || 'TR',
         email: r.email,
         accountId: `ACC-${1000 + idx}`,
-        accountType: 'pro' as const,
+        accountType: r.accountTypes?.join(', ') || null,
         country: 'Global',
         status: r.status === 'active' ? ('active' as const) : ('dormant' as const),
         joinedAt: r.registeredAt,
@@ -339,6 +346,7 @@ export const useReferrals = (query: ReferralQuery): Referral[] => {
       }))
       .filter((r) => {
         if (query.status !== 'all' && r.status !== query.status) return false;
+        if (query.accountType !== 'all' && !(r.accountType || '').split(', ').includes(query.accountType)) return false;
         if (!needle) return true;
         return (
           r.name.toLowerCase().includes(needle) ||
@@ -367,7 +375,7 @@ export const useRecentReferrals = (): Referral[] => {
             .slice(0, 2) || 'TR',
         email: r.email,
         accountId: `ACC-${1000 + idx}`,
-        accountType: 'pro' as const,
+        accountType: r.accountTypes?.join(', ') || null,
         country: 'Global',
         status: r.status === 'active' ? ('active' as const) : ('dormant' as const),
         joinedAt: r.registeredAt,
@@ -400,7 +408,7 @@ export const useLedger = (query: LedgerQuery): LedgerEntry[] => {
         at: e.createdAt,
         traderId: e.tradeCloseEventId || `trader-${e.id}`,
         traderName: `Trader (${e.symbol})`,
-        accountType: (e.accountType?.toLowerCase() || 'standard') as any,
+        accountType: e.accountType || null,
         symbol: e.symbol,
         lots: e.closedLots,
         rate: Math.round(e.rate * 100),
@@ -422,29 +430,6 @@ export const useLedgerTraders = (): { id: string; name: string }[] => {
 };
 
 /* ---------- commissions ---------- */
-export const useDistribution = (window: DistributionWindow) => {
-  const { data: ibStats } = useIbReferralStats();
-  const { data: monthlyReport } = useIbMonthlyCommission();
-
-  return useMemo(() => {
-    const totalEarningsDollar = monthlyReport?.stats?.totalEarnings ?? ibStats?.totalCommission ?? 0;
-    const totalCents = Math.round(totalEarningsDollar * 100);
-    const activeTraders = ibStats?.totalReferrals ?? 0;
-
-    return {
-      window,
-      total: totalCents,
-      activeTraders,
-      rows: [
-        { accountType: 'standard' as const, colour: '#10b981', commission: Math.round(totalCents * 0.5), lots: 0, traders: activeTraders, perLot: 0 },
-        { accountType: 'pro' as const, colour: '#3b82f6', commission: Math.round(totalCents * 0.3), lots: 0, traders: 0, perLot: 0 },
-        { accountType: 'raw' as const, colour: '#f59e0b', commission: Math.round(totalCents * 0.15), lots: 0, traders: 0, perLot: 0 },
-        { accountType: 'zero' as const, colour: '#8b5cf6', commission: Math.round(totalCents * 0.05), lots: 0, traders: 0, perLot: 0 },
-      ],
-    };
-  }, [window, ibStats, monthlyReport]);
-};
-
 /** Daily accrual calculated dynamically from user's live API data. */
 export const useSeries = (
   window: DistributionWindow,
@@ -497,5 +482,4 @@ export const useSeries = (
   }, [window, ledgerData, monthlyReport]);
 };
 
-export { RATE_ROWS as rateRows, ACCOUNT_TYPES as accountTypes } from '../data/rates';
 

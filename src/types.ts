@@ -9,14 +9,14 @@ export type Money = number;
 
 export type TierRank = number;
 
-export type AccountTypeId = 'standard' | 'pro' | 'raw' | 'zero';
+/** Account type name, as configured in Account Types Management. */
+export type AccountTypeId = string;
 export type ReferralStatus = 'active' | 'dormant' | 'unfunded' | 'churned';
 
 export interface AccountType {
-  id: AccountTypeId;
+  /** AccountTypes id; tier rates are keyed by it */
+  id: string;
   name: string;
-  /** how the broker earns on this account — drives the rate-card subheads */
-  model: 'spread-based' | 'commission a/c';
 }
 
 /* ---------- GET /api/partner/me ---------- */
@@ -146,14 +146,6 @@ export interface Distribution {
   rows: DistributionRow[];
 }
 
-/* ---------- GET /api/partner/rates ---------- */
-export interface RateRow {
-  id: string;
-  group: string;
-  examples: string;
-  /** BASE values, pre-uplift, minor units. Displayed = base × tier multiplier. */
-  base: Record<AccountTypeId, Money>;
-}
 
 /* ---------- GET /api/partner/payouts ---------- */
 export type PayoutMethodKind = 'bank' | 'crypto' | 'account';

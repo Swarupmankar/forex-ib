@@ -18,6 +18,23 @@ export interface ReferredUserItem {
   totalLots: number;
   totalCommission: number;
   monthlyCommission?: Record<string, number>;
+  /** Names of the client's account types (Account Types Management) */
+  accountTypes?: string[];
+  /** Commission earned from this client, per account type they traded on */
+  commissionByAccountType?: Array<{ accountTypeId: string; name: string; commission: number; lots: number }>;
+}
+
+/** Commission earned from clients on one account type, at the admin's rates */
+export interface CommissionByAccountType {
+  accountTypeId: string;
+  name: string;
+  isActive: boolean;
+  commission: number;
+  lots: number;
+  trades: number;
+  /** referred clients holding this account type */
+  clients: number;
+  avgPerLot: number;
 }
 
 export interface MonthlyCommissionRow {
@@ -36,6 +53,8 @@ export interface MonthlyCommissionRow {
 export interface MonthlyCommissionReport {
   monthlyData: MonthlyCommissionRow[];
   stats: {
+    /** Lifetime commission earned minus paid and pending withdrawals */
+    balance?: number;
     availableBalance: number;
     pendingWithdrawals: number;
     grossAvailable: number;
@@ -78,6 +97,9 @@ export interface IbDashboardData {
     minActiveTraders: number;
     bonusBenefitsText?: string;
   } | null;
+  /** The broker's active account types; tier rates are keyed by their id */
+  accountTypes?: Array<{ id: string; name: string }>;
+  commissionByAccountType?: CommissionByAccountType[];
   allTiers?: Array<{
     id: number;
     name: string;
@@ -86,6 +108,7 @@ export interface IbDashboardData {
     minActiveTraders: number;
     bonusAmount: number;
     bonusBenefitsText?: string;
+    /** symbol -> account type id -> USD per closed lot */
     rates?: Record<string, Record<string, number>>;
   }>;
   progress: {
@@ -112,7 +135,10 @@ export interface IbDashboardData {
 export interface IbLedgerRow {
   id: number;
   tradeCloseEventId?: string;
+  clientId?: number | null;
+  clientName?: string | null;
   symbol: string;
+  accountTypeId?: string;
   accountType: string;
   closedLots: number;
   rate: number;

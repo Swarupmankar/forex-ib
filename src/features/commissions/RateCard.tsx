@@ -2,43 +2,37 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Medal } from '../../components/Medal';
 import { InfoIcon } from '../../components/icons';
-import { ACCOUNT_TYPES, RATE_ROWS, bestAccountType, displayRate } from '../../data/rates';
+import { RATE_ROWS, groupExamples, groupRate } from '../../data/rates';
 import { TIERS } from '../../data/tiers';
-import { useMergedTiers } from '../../api/hooks';
+import { useAccountTypes, useMergedTiers } from '../../api/hooks';
 import { usd } from '../../lib/format';
-import type { AccountTypeId, TierRank } from '../../types';
+import type { TierRank } from '../../types';
 import s from './RateCard.module.css';
 
 export const RateCard = ({ tier }: { tier: TierRank }) => {
   const mergedTiers = useMergedTiers();
+  // Account types from Account Types Management
+  const accountTypes = useAccountTypes();
   const tiersList = mergedTiers.length > 0 ? mergedTiers : TIERS;
   const previews = tiersList.slice(Math.max(0, tier - 1), Math.max(0, tier - 1) + 3);
   const [selected, setSelected] = useState<TierRank>(tier);
   const active = tiersList.find((t) => t.rank === selected) ?? tiersList[Math.min(selected - 1, tiersList.length - 1)] ?? TIERS[0];
   const isOwnTier = selected === tier;
 
-  const getCellRate = (rowId: string, accId: string): number => {
-    const accKey = accId.toUpperCase();
-    if (active.rates && Object.keys(active.rates).length > 0) {
-      const symIdMap: Record<string, string[]> = {
-        'fx-major': ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD'],
-        'fx-minor': ['EURGBP', 'EURJPY', 'EURAUD', 'AUDNZD'],
-        'fx-exotic': ['USDTRY', 'USDZAR', 'USDMXN'],
-        'gold': ['XAUUSD'],
-        'metals': ['XAGUSD', 'XPTUSD'],
-        'indices': ['US30', 'US500', 'NAS100'],
-        'energies': ['WTIUSD', 'XNG/USD', 'UKOIL'],
-        'equities': ['US500'],
-      };
-      const candidates = symIdMap[rowId] || ['EURUSD'];
-      for (const sym of candidates) {
-        if (active.rates[sym] && typeof active.rates[sym][accKey] === 'number') {
-          return Math.round(active.rates[sym][accKey] * 100);
-        }
-      }
+  /** Rate the admin published for this tier, in cents; null when none is set. */
+  const getCellRate = (rowId: string, accId: string): number | null => {
+    const v = groupRate(active.rates, rowId, accId);
+    return v === null ? null : Math.round(v * 100);
+  };
+
+  /** The rate card marks the best-paying account type on each row. */
+  const bestAccountType = (rowId: string): string | null => {
+    let best: { id: string; v: number } | null = null;
+    for (const a of accountTypes) {
+      const v = getCellRate(rowId, a.id);
+      if (v !== null && v > 0 && (!best || v > best.v)) best = { id: a.id, v };
     }
-    const baseRate = RATE_ROWS.find((r) => r.id === rowId)?.base[accId as AccountTypeId] ?? 720;
-    return displayRate(baseRate, active.multiplier);
+    return best?.id ?? null;
   };
 
   return (
@@ -76,31 +70,34 @@ export const RateCard = ({ tier }: { tier: TierRank }) => {
           <thead>
             <tr>
               <th>Instrument group</th>
-              {ACCOUNT_TYPES.map((a) => (
+              {accountTypes.map((a) => (
                 <th key={a.id} className={s.acct}>
-                  {a.name}<span>{a.model}</span>
+                  {a.name}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {RATE_ROWS.map((row) => {
-              const best = bestAccountType(row);
+              const best = bestAccountType(row.id);
               return (
                 <tr key={row.id}>
                   <td>
                     <div className={s.sym}>
                       <div>
                         {row.group}
-                        <small>{row.examples}</small>
+                        <small>{groupExamples(active.rates, row.id) ?? row.examples}</small>
                       </div>
                     </div>
                   </td>
-                  {ACCOUNT_TYPES.map((a) => (
-                    <td key={a.id} className={`${s.v}${a.id === best ? ` ${s.best}` : ''}`}>
-                      {usd(getCellRate(row.id, a.id))}
-                    </td>
-                  ))}
+                  {accountTypes.map((a) => {
+                    const rate = getCellRate(row.id, a.id);
+                    return (
+                      <td key={a.id} className={`${s.v}${a.id === best ? ` ${s.best}` : ''}`}>
+                        {rate === null ? '—' : usd(rate)}
+                      </td>
+                    );
+                  })}
                 </tr>
               );
             })}

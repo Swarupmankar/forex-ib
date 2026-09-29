@@ -1,16 +1,17 @@
 import { Medal, MEDAL_MATERIALS } from '../../components/Medal';
 import { Modal } from '../../components/Modal';
 import { REWARD_ICONS, TIERS, parseBenefitsList, rungState, tierFlag, type Tier, type TierReward } from '../../data/tiers';
-import { RATE_ROWS, displayRate } from '../../data/rates';
+import { bestGroupRate } from '../../data/rates';
+import { useAccountTypes } from '../../api/hooks';
 import { int, lots, usd, usdWhole } from '../../lib/format';
 import type { TierRank } from '../../types';
 import s from './TierModal.module.css';
 
-/** The three instrument groups the modal previews, on Standard accounts. */
+/** The three instrument groups the modal previews, at the best-paying account type. */
 const PREVIEW_ROWS = [
-  { id: 'fx-major', label: 'Major FX' },
-  { id: 'gold', label: 'Gold (XAUUSD)' },
-  { id: 'indices', label: 'Indices' },
+  { id: 'MAJORS', label: 'Forex Majors' },
+  { id: 'METALS', label: 'Precious Metals' },
+  { id: 'INDICES', label: 'Equity Indices' },
 ];
 
 export const TierModal = ({
@@ -30,6 +31,7 @@ export const TierModal = ({
   tiers?: Tier[];
   onClose: () => void;
 }) => {
+  const accountTypeIds = useAccountTypes().map((a) => a.id);
   if (rank === null) return null;
 
   const list = tiers.length > 0 ? tiers : TIERS;
@@ -96,18 +98,19 @@ export const TierModal = ({
         <div className={s.ms}>
           <div className={s.msH}>Rates at this tier · {tier.upliftLabel} on base</div>
           {PREVIEW_ROWS.map((preview) => {
-            const row = RATE_ROWS.find((r) => r.id === preview.id)!;
-            const here = displayRate(row.base.standard, tier.multiplier);
-            const today = displayRate(row.base.standard, currentTier.multiplier);
-            const diff = here - today;
+            // Published rates (USD per lot) → cents; null when none is set
+            const toCents = (v: number | null) => (v === null ? null : Math.round(v * 100));
+            const here = toCents(bestGroupRate(tier.rates, preview.id, accountTypeIds));
+            const today = toCents(bestGroupRate(currentTier.rates, preview.id, accountTypeIds));
+            const diff = here === null || today === null ? null : here - today;
             return (
               <div className={s.mrow} key={preview.id}>
                 <div className={s.mrowL}>{preview.label}</div>
                 <div className={s.mrowV}>
-                  {usd(here)}
+                  {here === null ? '—' : usd(here)}
                   {rank === current ? (
                     <em>your rate today</em>
-                  ) : (
+                  ) : diff === null ? null : (
                     <em className={diff > 0 ? s.gain : undefined}>
                       {diff > 0 ? `+${usd(diff)}` : `−${usd(Math.abs(diff))}`} per lot
                     </em>
