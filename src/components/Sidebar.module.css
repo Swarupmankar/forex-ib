@@ -1,6 +1,7 @@
 .side{background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;position:sticky;top:0;height:100dvh;z-index:60}
 .brand{display:flex;align-items:center;min-height:110px;padding:24px 20px 20px}
-.nav{padding:12px;display:flex;flex-direction:column;gap:5px;flex:1;overflow-y:auto}
+.nav{padding:12px;display:flex;flex-direction:column;gap:5px;flex:1;overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none}
+.nav::-webkit-scrollbar{display:none;width:0;height:0}
 .nav-label{font-size:11px;color:var(--ink-3);font-weight:500;padding:21px 14px 8px}
 .nav-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;min-height:46px;color:var(--ink-2);font-size:13px;font-weight:500;width:100%;text-align:left;transition:background .16s,color .16s}
 .nav-item svg{width:20px;height:20px;flex:none;stroke-width:1.6}
