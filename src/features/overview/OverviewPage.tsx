@@ -19,6 +19,7 @@ import { referralLink } from '../../lib/referral';
 import { EarningsChart } from './EarningsChart';
 import { useNow, useOverview, usePartner, useSeries, useMergedTiers } from '../../api/hooks';
 import { useIbReferralStats, useIbMyReferrals, useIbMonthlyCommission, useIbReferralActivity, useIbDashboard } from '../../api/ib.hooks';
+import { useIbWallet } from '../../api/wallet.hooks';
 import { useTierProgress } from '../../lib/useTierProgress';
 import { accountTypeName } from '../../data/rates';
 import {
@@ -60,9 +61,13 @@ export const OverviewPage = () => {
   const { data: ibMonthly, isLoading: isMonthlyLoading } = useIbMonthlyCommission();
   const { data: ibActivity, isLoading: isActivityLoading } = useIbReferralActivity();
 
-  const isHeroLoading = isStatsLoading || isMonthlyLoading || isDashboardLoading;
+  // What can actually be withdrawn is the IB wallet balance -- commission is
+  // paid into it as it is earned. The ledger figures stay as the fallback for
+  // an IB whose wallet has not been touched yet.
+  const { data: wallet, isLoading: isWalletLoading } = useIbWallet();
+  const isHeroLoading = isStatsLoading || isMonthlyLoading || isDashboardLoading || isWalletLoading;
 
-  const balance = ibMonthly?.stats?.availableBalance ?? ibStats?.totalCommission ?? 0;
+  const balance = wallet?.balance ?? ibMonthly?.stats?.availableBalance ?? ibStats?.totalCommission ?? 0;
   const lifetime = ibMonthly?.stats?.totalEarnings ?? ibStats?.totalCommission ?? 0;
   const totalReferrals = ibStats?.totalReferrals ?? ibDashboard?.progress?.totalReferredClients ?? 0;
   const totalVolumeLots = ibStats?.totalLots ?? ibDashboard?.progress?.periodVolumeLots ?? 0;

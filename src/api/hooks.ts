@@ -21,7 +21,6 @@ import type {
   Overview,
   OverviewSeriesPoint,
   Partner,
-  PayoutsData,
   AccountType,
   Referral,
   ReferralQuery,
@@ -167,30 +166,6 @@ export const useMergedTiers = (): Tier[] => {
 
     return TIERS.map((t) => ({ ...t, cashBonus: 0, bonusBenefitsText: '' }));
   }, [ibDashboard]);
-};
-
-export const usePayouts = (): PayoutsData => {
-  const { data: ibMonthly } = useIbMonthlyCommission();
-  const { data: ibStats } = useIbReferralStats();
-
-  const balance = ibMonthly?.stats?.availableBalance ?? ibStats?.totalCommission ?? 0;
-  const inReview = ibMonthly?.stats?.pendingWithdrawals ?? 0;
-  const paidLifetime = ibMonthly?.stats?.totalWithdrawn ?? 0;
-  const minimum = ibMonthly?.minWithdrawal ?? 50;
-
-  return {
-    balance: Math.round(balance * 100),
-    inReview: Math.round(inReview * 100),
-    paidLifetime: Math.round(paidLifetime * 100),
-    payoutCount: 0,
-    nextSettlement: new Date().toISOString(),
-    minimum: Math.round(minimum * 100),
-    feeWaivedAbove: 50000,
-    feeUnderThreshold: 500,
-    manualApprovalAbove: 500000,
-    methods: [],
-    history: [],
-  };
 };
 
 export const useRewardHistory = (): RewardHistoryItem[] => {

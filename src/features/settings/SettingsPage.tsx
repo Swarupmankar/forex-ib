@@ -7,7 +7,8 @@ import { ContactModal } from '../../components/ContactModal';
 import {
   CheckIcon, ClockIcon, DownloadIcon, LockIcon, MailIcon, PhoneIcon,
 } from '../../components/icons';
-import { useNow, useOverview, usePartner, usePayouts } from '../../api/hooks';
+import { useNow, useOverview, usePartner } from '../../api/hooks';
+import { useIbWallet, useIbWalletTransactions } from '../../api/wallet.hooks';
 import { tierByRank } from '../../data/tiers';
 import { partnerManager } from '../../data/fixtures';
 import { downloadFile, stampedName } from '../../lib/download';
@@ -49,7 +50,8 @@ export const SettingsPage = () => {
   const now = useNow();
   const partner = usePartner();
   const overview = useOverview();
-  const payouts = usePayouts();
+  const { data: wallet } = useIbWallet();
+  const { data: walletHistory = [] } = useIbWalletTransactions();
   const toast = useToast();
   const [prefs, setPrefs] = usePersistentState<Prefs>('ib.prefs', DEFAULT_PREFS);
   const [twoFactor, setTwoFactor] = usePersistentState('ib.2fa', true);
@@ -81,7 +83,7 @@ export const SettingsPage = () => {
             lifetimeMinor: overview.lifetime,
             paidOutMinor: overview.paidOut,
           },
-          payouts: { balanceMinor: payouts.balance, history: payouts.history },
+          payouts: { balanceMinor: Math.round((wallet?.balance ?? 0) * 100), history: walletHistory },
           preferences: { ...prefs, twoFactor },
         },
         null,

@@ -5,145 +5,120 @@ import { Feed, type FeedRow } from '../../components/Feed';
 import { Hero, HeroCta, HeroFoot, HeroLabel, HeroNote, HeroNumber, HeroSplits } from '../../components/Hero';
 import { Skeleton } from '../../components/Skeleton';
 import { useToast } from '../../components/Toast';
-import {
-  BankIcon, CalendarIcon, CardPlainIcon, DollarIcon, DownloadIcon, InfoIcon, PlusIcon,
-  ShieldIcon,
-} from '../../components/icons';
-import { PayoutRequestModal } from './PayoutRequestModal';
-import { AddMethodModal } from './AddMethodModal';
-import { useNow, usePayouts } from '../../api/hooks';
-import { useIbMonthlyCommission, useIbReferralStats } from '../../api/ib.hooks';
+import { CardPlainIcon, DollarIcon, DownloadIcon, ShieldIcon, TrendUpIcon } from '../../components/icons';
+import { WithdrawModal } from './WithdrawModal';
+import { useNow } from '../../api/hooks';
+import { useIbWallet, useIbWalletTransactions } from '../../api/wallet.hooks';
+import type { WalletTransaction } from '../../api/wallet.api';
 import { downloadCsv, stampedName } from '../../lib/download';
-import { usePersistentState } from '../../lib/usePersistentState';
-import { dayMonth, int, pct0, shortDate, usd, usdWhole } from '../../lib/format';
-import type { Payout, PayoutMethod, PayoutMethodKind, PayoutsData } from '../../types';
-import s from './Payouts.module.css';
+import { int, stamp, usd, usdSigned, usdWhole } from '../../lib/format';
 
-const METHOD_ICON: Record<PayoutMethodKind, typeof BankIcon> = {
-  bank: BankIcon,
-  crypto: DollarIcon,
-  account: CardPlainIcon,
+/**
+ * The IB wallet. Commission is paid in here the moment a referred client's
+ * trade closes, and this is the only place it can be withdrawn from -- drawn
+ * on the broker's separate IB payout wallet, never on user deposits.
+ *
+ * Everything on this page is the backend's number. There is no local history
+ * and no saved destinations: the address is entered per withdrawal, the same
+ * way the user portal does it.
+ */
+
+const cents = (v: string | number | null | undefined) => Math.round(Number(v ?? 0) * 100);
+
+const TYPE: Record<WalletTransaction['action'], string> = {
+  IB_COMMISSION: 'IB commission',
+  WITHDRAW: 'Withdrawal',
+  DEPOSIT: 'Deposit',
+  TRANSFER: 'Transfer',
 };
 
-const DEST_COLOURS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)'];
+const STATUS: Record<WalletTransaction['status'], { label: string; cls: string }> = {
+  COMPLETED: { label: 'Completed', cls: 'c-active' },
+  PENDING: { label: 'Processing', cls: 'c-dormant' },
+  FAILED: { label: 'Rejected', cls: 'c-churned' },
+};
 
-const columns: Col<Payout>[] = [
-  { key: 'ref', header: 'Reference', render: (p) => <span className="num">{p.id}</span> },
-  { key: 'requested', header: 'Requested', mobile: 'secondary', render: (p) => <span className="num">{shortDate(p.requestedAt)}</span> },
-  { key: 'method', header: 'Method', mobile: 'primary', render: (p) => p.method },
-  { key: 'amount', header: 'Amount', align: 'right', mobile: 'value', render: (p) => usd(p.amount) },
+/** Commission comes in, a withdrawal goes out. */
+const signed = (t: WalletTransaction) => (t.action === 'WITHDRAW' ? -cents(t.amount) : cents(t.amount));
+
+const columns: Col<WalletTransaction>[] = [
+  { key: 'when', header: 'Date', mobile: 'secondary', render: (t) => <span className="num">{stamp(t.createdAt)}</span> },
+  { key: 'type', header: 'Type', mobile: 'primary', render: (t) => TYPE[t.action] ?? t.action },
   {
-    key: 'settled', header: 'Settled',
-    render: (p) => <span className="num">{p.settledAt ? shortDate(p.settledAt) : '—'}</span>,
+    key: 'detail', header: 'Details',
+    render: (t) =>
+      t.action === 'WITHDRAW'
+        ? <span className="num" title={t.to ?? ''}>{t.to ? `${t.to.slice(0, 8)}…${t.to.slice(-6)}` : '—'}</span>
+        : (t.from ?? '—'),
+  },
+  {
+    key: 'amount', header: 'Amount', align: 'right', mobile: 'value',
+    render: (t) => usdSigned(signed(t)),
   },
   {
     key: 'status', header: 'Status', mobile: 'status',
-    render: (p) =>
-      p.status === 'settled'
-        ? <span className="chip c-active">Settled</span>
-        : <span className="chip c-dormant">In review</span>,
+    render: (t) => <span className={`chip ${STATUS[t.status].cls}`}>{STATUS[t.status].label}</span>,
   },
 ];
 
 export const PayoutsPage = () => {
   const now = useNow();
-  const baseData = usePayouts();
   const toast = useToast();
+  const { data: account, isLoading: accountLoading } = useIbWallet();
+  const { data: rows = [], isLoading: rowsLoading } = useIbWalletTransactions();
+  const [withdrawing, setWithdrawing] = useState(false);
 
-  const { data: ibMonthly, isLoading: isMonthlyLoading } = useIbMonthlyCommission();
-  const { data: ibStats, isLoading: isStatsLoading } = useIbReferralStats();
-  const isLoading = isMonthlyLoading && isStatsLoading;
+  const balance = account?.balance ?? 0;
+  // The server gates on this too; here it only keeps the button honest.
+  const minBalance = account?.minWithdrawBalance ?? 10;
+  const canWithdraw = balance >= minBalance;
 
-  const [requesting, setRequesting] = useState(false);
-  const [adding, setAdding] = useState(false);
-  const [methods, setMethods] = usePersistentState<PayoutMethod[]>('ib.payout-methods.v1', []);
-  const [history, setHistory] = usePersistentState<Payout[]>('ib.payout-history.v1', []);
-
-  const data: PayoutsData = useMemo(() => {
-    const balance = ibMonthly?.stats?.availableBalance ?? ibStats?.totalCommission ?? 0;
-    const inReview = ibMonthly?.stats?.pendingWithdrawals ?? 0;
-    const paidLifetime = ibMonthly?.stats?.totalWithdrawn ?? 0;
-    const minimum = ibMonthly?.minWithdrawal ?? 50;
-
-    return {
-      ...baseData,
-      balance: Math.round(balance * 100),
-      inReview: Math.round(inReview * 100),
-      paidLifetime: Math.round(paidLifetime * 100),
-      minimum: Math.round(minimum * 100),
-      payoutCount: history.length,
-      methods,
-      history,
-    };
-  }, [baseData, ibMonthly, ibStats, history, methods]);
-
-  /** Where the money has actually gone, by destination. */
-  const destinations = useMemo(() => {
-    const totals = new Map<string, { total: number; count: number }>();
-    data.history.forEach((p) => {
-      const prev = totals.get(p.method) ?? { total: 0, count: 0 };
-      totals.set(p.method, { total: prev.total + p.amount, count: prev.count + 1 });
+  const totals = useMemo(() => {
+    let received = 0; let withdrawn = 0; let inFlight = 0;
+    rows.forEach((t) => {
+      if (t.action === 'IB_COMMISSION' && t.status === 'COMPLETED') received += cents(t.amount);
+      if (t.action === 'WITHDRAW' && t.status === 'COMPLETED') withdrawn += cents(t.amount);
+      if (t.action === 'WITHDRAW' && t.status === 'PENDING') inFlight += cents(t.amount);
     });
-    const rows = [...totals].sort((a, b) => b[1].total - a[1].total);
-    const sum = rows.reduce((acc, [, v]) => acc + v.total, 0);
-    return { rows, sum };
-  }, [data.history]);
-
-  const setDefault = (id: string) => {
-    setMethods(methods.map((m) => ({ ...m, isDefault: m.id === id })));
-    toast('Default updated', `${methods.find((m) => m.id === id)?.label} will be pre-selected.`);
-  };
-
-  const remove = (id: string) => {
-    const target = methods.find((m) => m.id === id);
-    const rest = methods.filter((m) => m.id !== id);
-    if (target?.isDefault && rest.length > 0) rest[0] = { ...rest[0], isDefault: true };
-    setMethods(rest);
-    toast('Method removed', `${target?.label} is no longer a destination.`, 'warn');
-  };
+    return { received, withdrawn, inFlight };
+  }, [rows]);
 
   const exportHistory = () => {
-    if (data.history.length === 0) {
-      toast('Nothing to export', 'No payouts history yet.', 'warn');
+    if (rows.length === 0) {
+      toast('Nothing to export', 'No wallet activity yet.', 'warn');
       return;
     }
     downloadCsv(
-      stampedName('ib-payout-history', now, 'csv'),
-      ['Reference', 'Requested', 'Method', 'Amount (USD)', 'Settled', 'Status'],
-      data.history.map((p) => [
-        p.id, p.requestedAt, p.method, (p.amount / 100).toFixed(2), p.settledAt ?? '', p.status,
+      stampedName('ib-wallet-history', now, 'csv'),
+      ['Date', 'Type', 'Details', 'Amount (USD)', 'Status', 'Tx hash'],
+      rows.map((t) => [
+        t.createdAt, TYPE[t.action] ?? t.action, t.action === 'WITHDRAW' ? (t.to ?? '') : (t.from ?? ''),
+        (signed(t) / 100).toFixed(2), STATUS[t.status].label, t.txHash ?? '',
       ]),
     );
-    toast('Payout history downloaded', `${data.history.length} payouts as CSV.`);
-  };
-
-  const handlePayoutSuccess = (amount: number, method: PayoutMethod) => {
-    const newPayout: Payout = {
-      id: `PO-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-      requestedAt: new Date().toISOString().slice(0, 10),
-      method: method.label,
-      amount,
-      settledAt: null,
-      status: 'review',
-    };
-    setHistory([newPayout, ...history]);
+    toast('Wallet history downloaded', `${rows.length} rows as CSV.`);
   };
 
   const rules: FeedRow[] = [
     {
-      id: 'schedule', tone: 'blue', icon: <CalendarIcon />,
-      body: <b>Weekly payouts</b>,
-      time: `Withdraw any Monday instead of monthly. Next scheduled settlement ${dayMonth(data.nextSettlement)}.`,
+      id: 'credit', tone: 'green', icon: <TrendUpIcon />,
+      body: <b>Paid in as it is earned</b>,
+      time: 'Every closed trade by a referred client credits this wallet straight away. No monthly request, no waiting for approval.',
     },
     {
-      id: 'fees', tone: 'green', icon: <ShieldIcon />,
-      body: <b>Fees and minimums</b>,
-      time: `Minimum ${usdWhole(data.minimum)} per request. Fee waived above ${usdWhole(data.feeWaivedAbove)}.`,
+      id: 'fees', tone: 'blue', icon: <DollarIcon />,
+      body: <b>Fees are shown before you confirm</b>,
+      time: 'You enter dollars. The quote shows the coin you receive, the service fee, and the network fee — which on most coins your broker covers.',
     },
     {
-      id: 'approval', tone: 'amber', icon: <InfoIcon />,
-      body: <b>Manual approval over {usdWhole(data.manualApprovalAbove)}</b>,
-      time: 'Larger payouts settle next business day after review.',
+      id: 'otp', tone: 'amber', icon: <ShieldIcon />,
+      body: <b>Every withdrawal is verified</b>,
+      time: 'A six-digit code goes to your email before anything leaves the wallet.',
+    },
+    {
+      id: 'floor', tone: 'amber', icon: <CardPlainIcon />,
+      body: <b>Withdrawals open at {usd(cents(minBalance))}</b>,
+      time: 'Below that the balance keeps building. Small payouts are not worth the network fee.',
     },
   ];
 
@@ -151,13 +126,13 @@ export const PayoutsPage = () => {
     <section className="wrap view">
       <PageHead
         eyebrow="Growth"
-        title="Payouts"
-        sub="Move your partner balance out, and track what's in flight."
+        title="IB Wallet"
+        sub="Where your commission lands, and where you withdraw it from."
         actions={
           <>
             <button className="btn" onClick={exportHistory}><DownloadIcon /> Export history</button>
-            <button className="btn btn-dark" onClick={() => setRequesting(true)}>
-              <CardPlainIcon /> Request payout
+            <button className="btn btn-dark" onClick={() => setWithdrawing(true)} disabled={!canWithdraw}>
+              <CardPlainIcon /> Withdraw
             </button>
           </>
         }
@@ -168,161 +143,44 @@ export const PayoutsPage = () => {
           <div>
             <HeroLabel>Available to withdraw</HeroLabel>
             <HeroNumber>
-              {isLoading ? <Skeleton dark width="160px" height="40px" /> : usd(data.balance)}
+              {accountLoading ? <Skeleton dark width="160px" height="40px" /> : usd(cents(balance))}
             </HeroNumber>
             <HeroFoot>
               <HeroNote>
-                Minimum {usdWhole(data.minimum)} · no fee over {usdWhole(data.feeWaivedAbove)}
+                {canWithdraw
+                  ? 'Withdraw to any supported coin · fees quoted before you confirm'
+                  : `Withdrawals open once your balance reaches ${usd(cents(minBalance))}`}
               </HeroNote>
             </HeroFoot>
             <HeroCta>
-              <button className="btn btn-white btn-sm" onClick={() => setRequesting(true)}>Withdraw</button>
-              <button className="btn btn-ghost btn-sm" onClick={() => setAdding(true)}>Add method</button>
+              <button className="btn btn-white btn-sm" onClick={() => setWithdrawing(true)} disabled={!canWithdraw}>
+                Withdraw
+              </button>
             </HeroCta>
             <HeroSplits
               items={[
-                {
-                  label: 'In review',
-                  value: isLoading ? <Skeleton dark width="60px" height="20px" /> : usd(data.inReview),
-                },
-                {
-                  label: 'Paid lifetime',
-                  value: isLoading ? <Skeleton dark width="60px" height="20px" /> : usdWhole(data.paidLifetime),
-                },
-                {
-                  label: 'Payouts',
-                  value: isLoading ? <Skeleton dark width="40px" height="20px" /> : int(data.payoutCount),
-                },
-                { label: 'Next settle', value: dayMonth(data.nextSettlement) },
+                { label: 'Commission received', value: rowsLoading ? <Skeleton dark width="60px" height="20px" /> : usdWhole(totals.received) },
+                { label: 'Withdrawn', value: rowsLoading ? <Skeleton dark width="60px" height="20px" /> : usdWhole(totals.withdrawn) },
+                { label: 'In flight', value: rowsLoading ? <Skeleton dark width="60px" height="20px" /> : usd(totals.inFlight) },
+                { label: 'Transactions', value: rowsLoading ? <Skeleton dark width="40px" height="20px" /> : int(rows.length) },
               ]}
             />
           </div>
         </Hero>
 
-        {/* ---------- where the money went ---------- */}
-        {destinations.rows.length > 0 && (
-          <div className="card">
-            <div className="card-head">
-              <div>
-                <div className="card-title">Where your payouts go</div>
-                <div className="card-sub">
-                  Last {data.history.length} payouts · {usd(destinations.sum)} across{' '}
-                  {destinations.rows.length} destination{destinations.rows.length === 1 ? '' : 's'}
-                </div>
-              </div>
-            </div>
-            <div className={s.dest}>
-              {destinations.rows.map(([method, v], i) => (
-                <div className={s.drow} key={method}>
-                  <i style={{ background: DEST_COLOURS[i % DEST_COLOURS.length] }} />
-                  <span className={s.dname}>
-                    {method}
-                    <small>{v.count} payout{v.count === 1 ? '' : 's'}</small>
-                  </span>
-                  <span className={s.dbar}>
-                    <i
-                      style={{
-                        width: pct0(v.total / destinations.sum),
-                        background: DEST_COLOURS[i % DEST_COLOURS.length],
-                      }}
-                    />
-                  </span>
-                  <span className="qty">{usd(v.total)}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ---------- destinations ---------- */}
-        <div className="card">
-          <div className="card-head">
-            <div>
-              <div className="card-title">Payout methods</div>
-              <div className="card-sub">Verified against your partner name before first use</div>
-            </div>
-            <button className="btn btn-sm" onClick={() => setAdding(true)}><PlusIcon /> Add method</button>
-          </div>
-
-          {methods.length === 0 ? (
-            <div className={s.mempty}>
-              No payout destinations yet. Add one to withdraw your balance.
-            </div>
-          ) : (
-            <div className={s.methods}>
-              {methods.map((m) => {
-                const Icon = METHOD_ICON[m.kind];
-                return (
-                  <div className={s.method} key={m.id} data-sel={m.isDefault ?? false}>
-                    <div className={s.mtop}>
-                      <span className={s.mico}><Icon /></span>
-                      <div className={s.mhead}>
-                        <div className={s.mlabel}>
-                          {m.label}
-                          {m.isDefault && <span className="chip c-paid">Default</span>}
-                        </div>
-                        <div className={s.mdetail}>{m.detail}</div>
-                      </div>
-                    </div>
-
-                    <div className={s.mterms}>{m.terms}</div>
-
-                    <div className={s.mactions}>
-                      <button
-                        className={s.mact}
-                        disabled={m.isDefault}
-                        onClick={() => setDefault(m.id)}
-                      >
-                        {m.isDefault ? 'Default' : 'Make default'}
-                      </button>
-                      <button
-                        className={`${s.mact} ${s.danger}`}
-                        disabled={methods.length === 1}
-                        onClick={() => remove(m.id)}
-                        aria-label={`Remove ${m.label}`}
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          <div className="notice">
-            <InfoIcon />
-            <div>
-              Payouts above {usdWhole(data.manualApprovalAbove)} need manual approval and settle the next
-              business day. Bank details must match your verified name.
-            </div>
-          </div>
-        </div>
-
-        {/* ---------- rules ---------- */}
         <div className="two">
           <div className="card">
-            <div className="card-head"><div className="card-title">Payout history</div></div>
-            <DataList columns={columns} rows={data.history} rowKey={(p) => p.id} empty="No payouts history yet." />
+            <div className="card-head"><div className="card-title">Wallet activity</div></div>
+            <DataList columns={columns} rows={rows} rowKey={(t) => String(t.id)} empty="No wallet activity yet. Commission appears here as your clients trade." />
           </div>
           <div className="card">
-            <div className="card-head"><div className="card-title">How payouts work</div></div>
+            <div className="card-head"><div className="card-title">How the IB wallet works</div></div>
             <Feed rows={rules} />
           </div>
         </div>
       </div>
 
-      <PayoutRequestModal
-        open={requesting}
-        data={{ ...data, methods }}
-        onClose={() => setRequesting(false)}
-        onSuccess={handlePayoutSuccess}
-      />
-      <AddMethodModal
-        open={adding}
-        onClose={() => setAdding(false)}
-        onAdd={(method) => setMethods([...methods, method])}
-      />
+      <WithdrawModal open={withdrawing} balance={balance} onClose={() => setWithdrawing(false)} />
     </section>
   );
 };

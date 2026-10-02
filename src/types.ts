@@ -147,45 +147,6 @@ export interface Distribution {
 }
 
 
-/* ---------- GET /api/partner/payouts ---------- */
-export type PayoutMethodKind = 'bank' | 'crypto' | 'account';
-
-export interface PayoutMethod {
-  id: string;
-  kind: PayoutMethodKind;
-  label: string;
-  detail: string;
-  terms: string;
-  isDefault?: boolean;
-  /** settlement window in hours, for sorting and copy */
-  etaHours: number;
-  /** flat fee charged by the rail itself, minor units */
-  railFee: Money;
-}
-
-export interface Payout {
-  id: string;
-  requestedAt: string;
-  method: string;
-  amount: Money;
-  settledAt: string | null;
-  status: 'review' | 'settled';
-}
-
-export interface PayoutsData {
-  balance: Money;
-  inReview: Money;
-  paidLifetime: Money;
-  payoutCount: number;
-  nextSettlement: string;
-  minimum: Money;
-  feeWaivedAbove: Money;
-  /** flat fee charged when the request is under `feeWaivedAbove` */
-  feeUnderThreshold: Money;
-  manualApprovalAbove: Money;
-  methods: PayoutMethod[];
-  history: Payout[];
-}
 
 /* ---------- rewards ---------- */
 export interface RewardHistoryItem {

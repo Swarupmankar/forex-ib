@@ -25,7 +25,7 @@ export const SECTIONS: Section[] = [
   { id: 'commissions', path: '/commissions', label: 'Commissions', title: 'Commissions', tabLabel: 'Rates', group: 'main' },
   { id: 'rewards', path: '/rewards', label: 'Rewards', title: 'Rewards', group: 'main' },
   { id: 'marketing', path: '/marketing', label: 'Marketing', title: 'Marketing', group: 'growth' },
-  { id: 'payouts', path: '/payouts', label: 'Payouts', title: 'Payouts', group: 'growth' },
+  { id: 'payouts', path: '/payouts', label: 'IB Wallet', title: 'IB Wallet', tabLabel: 'Wallet', group: 'growth' },
   { id: 'settings', path: '/settings', label: 'Settings', title: 'Settings', group: 'growth' },
 ];
 

@@ -1,6 +1,6 @@
 import type {
   CreativeAsset, Distribution, DistributionWindow, LedgerEntry, Money, Overview,
-  OverviewSeriesPoint, Partner, PartnerManager, PayoutsData, Referral, RewardHistoryItem,
+  OverviewSeriesPoint, Partner, PartnerManager, Referral, RewardHistoryItem,
 } from '../types';
 
 /**
@@ -209,30 +209,6 @@ export const distributions: Record<DistributionWindow, Distribution> = {
   },
 };
 
-/* ================= payouts ================= */
-export const payouts: PayoutsData = {
-  balance: cents(12_940.6),
-  inReview: cents(1_200),
-  paidLifetime: cents(135_349),
-  payoutCount: 9,
-  nextSettlement: '2026-09-01',
-  minimum: cents(100),
-  feeWaivedAbove: cents(500),
-  // the mockup states "no fee over $500" but never names the fee below it —
-  // this is a fixture value, not something lifted from the design
-  feeUnderThreshold: cents(5),
-  manualApprovalAbove: cents(5_000),
-  methods: [
-    { id: 'bank', kind: 'bank', label: 'Bank transfer', detail: 'HDFC Bank ••4471', terms: '1–3 business days · free', isDefault: true, etaHours: 48, railFee: 0 },
-    { id: 'usdt', kind: 'crypto', label: 'USDT (TRC-20)', detail: 'TQn9•••••7fXd', terms: 'under 1 hour · 1.0 USDT', etaHours: 1, railFee: 100 },
-    { id: 'account', kind: 'account', label: 'Trading account', detail: 'Credit to #88200114', terms: 'instant · free', etaHours: 0, railFee: 0 },
-  ],
-  history: [
-    { id: 'PO-2026-0912', requestedAt: '2026-08-04', method: 'USDT TRC-20', amount: cents(1_200), settledAt: null, status: 'review' },
-    { id: 'PO-2026-0847', requestedAt: '2026-07-31', method: 'HDFC ••4471', amount: cents(6_200), settledAt: '2026-08-01', status: 'settled' },
-    { id: 'PO-2026-0790', requestedAt: '2026-06-30', method: 'HDFC ••4471', amount: cents(4_850), settledAt: '2026-07-02', status: 'settled' },
-  ],
-};
 
 /* ================= rewards ================= */
 export const rewardHistory: RewardHistoryItem[] = [
